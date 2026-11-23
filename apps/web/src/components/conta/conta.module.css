@@ -1,0 +1,47 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 440px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+.inputRow {
+  position: relative;
+  display: flex;
+}
+.inputRow input {
+  flex: 1;
+  min-width: 0;
+  padding-right: 88px;
+}
+.toggle {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+}
+.toggle:hover {
+  color: var(--accent-active);
+  text-decoration: underline;
+}
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+@media (max-width: 1023px) {
+  .toggle {
+    min-height: var(--touch-target);
+  }
+}

@@ -1,0 +1,400 @@
+/* Recursos e impugnações: lista, novo (3 passos) e peça. Só tokens. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Passos ────────────────────────────────────────────────────────── */
+.steps {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.step[data-state="active"] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.stepDot {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.step[data-state="active"] .stepDot,
+.step[data-state="done"] .stepDot {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* ── Escolha do tipo ───────────────────────────────────────────────── */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+}
+
+.kind {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.kind:hover {
+  background: var(--surface);
+}
+
+.kind:has(input:checked) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.kind:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.kind input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kindName {
+  font-weight: 500;
+}
+
+.edital {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.editalObject {
+  font-weight: 500;
+}
+
+.facts {
+  width: 100%;
+  min-height: 160px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.review {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.review dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.review dd {
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.progressHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.phases {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.phase {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.phase[data-state="active"] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.phase[data-state="done"] {
+  color: var(--ink);
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}
+
+/* ── Peça ──────────────────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .aside {
+    order: -1;
+  }
+}
+
+.main,
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.sealBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.editorHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionHead h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.body {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 75ch;
+}
+
+.ph {
+  padding: 0 4px;
+  background: var(--warning-soft);
+  color: var(--accent);
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Marcador [S1]: chip que leva à fonte. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 6px;
+  margin: 0 1px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  vertical-align: baseline;
+}
+
+.chip:hover {
+  background: var(--accent-soft);
+}
+
+.chipMissing {
+  background: var(--error-soft);
+  color: var(--error);
+}
+
+.area {
+  width: 100%;
+  min-height: 200px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+
+.box h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.deadline {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.source {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  scroll-margin-top: var(--space-8);
+}
+
+.source:target {
+  outline: 2px solid var(--accent);
+}
+
+.sourceHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.sourceId {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.quote {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--accent-soft);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.warns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.conflict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.conflict pre {
+  white-space: pre-wrap;
+  font: inherit;
+  padding: var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.disclaimer {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Lista ─────────────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+}

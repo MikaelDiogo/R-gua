@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && corepack pnpm install --frozen-lockfile --filter @agora/web...",
+  "buildCommand": "cd ../.. && corepack pnpm --filter @agora/contracts build && corepack pnpm --filter @agora/web build"
+}

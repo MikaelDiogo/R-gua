@@ -1,0 +1,342 @@
+/* Propostas: lista, nova (2 passos) e editor. Só tokens. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.steps {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.step[data-state="active"] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.stepDot {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.step[data-state="active"] .stepDot,
+.step[data-state="done"] .stepDot {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.priceTable {
+  min-width: 860px;
+}
+
+.priceTable td {
+  height: auto;
+  vertical-align: top;
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.desc {
+  max-width: 360px;
+  line-height: 1.45;
+}
+
+.priceCell {
+  min-width: 170px;
+}
+
+.priceCell .moneyBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--control-height);
+  padding: 0 var(--space-2);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+
+.priceCell .moneyBox:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.priceCell input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  outline: 0;
+  text-align: right;
+}
+
+.cellNote {
+  display: block;
+  margin-top: var(--space-1);
+  text-align: right;
+}
+
+.totalRow td {
+  border-top: 1px solid var(--hairline);
+  font-weight: 600;
+  height: 48px;
+  padding-top: var(--space-3);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.barText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.barTotal {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.warn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.summary dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary dd {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.progressHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  margin-right: var(--space-2);
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}
+
+/* ── Editor ────────────────────────────────────────────────────────── */
+.editorHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.sealBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionHead h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.body {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 75ch;
+}
+
+.ph {
+  padding: 0 4px;
+  background: var(--warning-soft);
+  color: var(--accent);
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.area {
+  width: 100%;
+  min-height: 160px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.conflict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.conflict pre {
+  white-space: pre-wrap;
+  font: inherit;
+  padding: var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+/* Pontos de atenção da proposta: ficam no topo, com destaque, até o envio. */
+.warnBox {
+  padding: var(--space-4);
+  border: 1px solid var(--warning-soft);
+  border-radius: var(--radius-md);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.warnBox h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.warnBox ul {
+  margin: 0;
+  padding-left: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Lista de propostas: busca e ordenação. */
+.listTools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.listSearch {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.listSearch input,
+.listSort select {
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg-field);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  color: var(--ink);
+  font: inherit;
+}
+
+.listSort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

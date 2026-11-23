@@ -1,0 +1,371 @@
+/* Conversas: "Recentes" na barra lateral e a tela "Todas as conversas". Só tokens. */
+
+/* ── Barra lateral ─────────────────────────────────────────────────────────── */
+.recents {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+.row:hover,
+.row:focus-within,
+.row[data-menu] {
+  background: var(--hairline);
+}
+.row[data-current] {
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-2);
+  color: var(--body);
+  text-decoration: none;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+}
+.row[data-current] .link {
+  color: var(--ink);
+  font-weight: 500;
+}
+.title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.more {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+}
+.row:hover .more,
+.row:focus-within .more,
+.row[data-menu] .more,
+.more:focus-visible {
+  opacity: 1;
+}
+.more:hover {
+  color: var(--ink);
+  background: var(--card);
+}
+.more svg {
+  width: 16px;
+  height: 16px;
+}
+@media (hover: none), (max-width: 1023px) {
+  .more {
+    opacity: 1;
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+  .link {
+    min-height: var(--touch-target);
+  }
+}
+.menu {
+  position: absolute;
+  z-index: var(--z-float);
+  top: calc(100% + 2px);
+  right: 0;
+  min-width: 176px;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.menuItem:hover {
+  background: var(--accent-soft);
+}
+.menuDanger {
+  color: var(--error);
+}
+.menuDanger:hover {
+  background: var(--error-soft);
+}
+.confirm {
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--ink);
+}
+.confirm p {
+  margin: 0;
+}
+.confirmBtns {
+  display: flex;
+  gap: var(--space-2);
+}
+.confirmBtns button {
+  height: 30px;
+  font-size: 13px;
+  padding: 0 var(--space-3);
+}
+.rename {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--space-1);
+}
+.rename input {
+  width: 100%;
+  height: 32px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-2);
+}
+.rename input:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.hint {
+  margin: 0;
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  color: var(--muted);
+}
+.hintError {
+  color: var(--error);
+}
+.all {
+  align-self: flex-start;
+  height: 28px;
+  margin-top: var(--space-1);
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  text-decoration: none;
+}
+@media (max-width: 1023px) {
+  .all {
+    height: var(--touch-target);
+    font-size: 13px;
+  }
+}
+
+/* ── Tela "Todas as conversas" ─────────────────────────────────────────────── */
+.page {
+  max-width: var(--chat-column);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.head h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+}
+.sub {
+  margin: var(--space-1) 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 44px;
+  padding: 0 var(--space-3);
+  background: var(--glass-bg-field);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+}
+.search:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+.search svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex: none;
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+}
+.groupLabel {
+  margin: var(--space-4) 0 var(--space-1);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+.item:first-child {
+  border-top: 0;
+}
+.item:hover {
+  background: var(--canvas);
+}
+.item:first-child:hover {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+.item:last-child:hover {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+.itemLink {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  color: inherit;
+  text-decoration: none;
+  min-height: var(--touch-target);
+}
+.itemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.itemMeta {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.itemMore {
+  position: relative;
+  flex: none;
+  margin-right: var(--space-3);
+}
+.itemMore .more {
+  opacity: 1;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+}
+.itemRename {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.itemRename input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3);
+}
+.itemRename input:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+.itemRename button {
+  height: 32px;
+  font-size: 13px;
+}
+.more2 {
+  align-self: center;
+  margin-top: var(--space-2);
+}
+.skel {
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.errorLine {
+  margin: var(--space-1) 0 0;
+  font-size: 12px;
+  color: var(--error);
+}

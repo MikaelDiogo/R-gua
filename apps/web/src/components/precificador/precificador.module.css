@@ -1,0 +1,133 @@
+/* Precificador: benchmark por item e simulador de margem. Só tokens. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 940px;
+}
+
+.table td {
+  height: auto;
+  vertical-align: top;
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.desc {
+  max-width: 320px;
+  line-height: 1.45;
+}
+
+.notes {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.range {
+  white-space: nowrap;
+}
+
+.simulate {
+  white-space: nowrap;
+}
+
+.base {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Simulador ─────────────────────────────────────────────────────── */
+.sim {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.simForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.heroLabel {
+  color: var(--muted);
+}
+
+.heroValue {
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-4);
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.facts dd {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.scenarios {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .sim {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

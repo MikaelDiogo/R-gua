@@ -1,0 +1,764 @@
+/* Monitores: lista em tabela, assistente de 3 passos e detalhe. Só tokens (Régua). */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.sub {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.sectionHint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ── Chips do que o monitor procura ───────────────────────── */
+.parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+}
+
+.part {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Tabela (lista e editais que casam) ───────────────────── */
+/* Sem overflow hidden: o menu "⋯" precisa sair da tabela. */
+.tableWrap {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.mtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.mtable th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+.mtable td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: middle;
+  color: var(--body);
+}
+
+.mtable tr:last-child td {
+  border-bottom: 0;
+}
+
+.mtable :global(.rg-r) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mrow {
+  cursor: pointer;
+}
+
+.mrow:hover td {
+  background: var(--canvas);
+}
+
+.monName {
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.monName:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.mrow[data-paused] .monName {
+  color: var(--body);
+}
+
+.fixedTag {
+  margin-left: var(--space-2);
+}
+
+.when {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.actionsCell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.actionsCell > * {
+  vertical-align: middle;
+}
+
+.openBtn {
+  height: 30px;
+  padding: 0 var(--space-3);
+  font-size: 13px;
+  margin-right: var(--space-1);
+}
+
+.etable td:first-child {
+  max-width: 560px;
+}
+
+.editalLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.rulerCell {
+  min-width: 190px;
+}
+
+/* ── Menu "⋯" ─────────────────────────────────────────────── */
+.menuRoot {
+  position: relative;
+  display: inline-block;
+}
+
+.menuBtn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.menuBtn:hover,
+.menuBtn[aria-expanded="true"] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.menuBtn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.menu {
+  position: absolute;
+  z-index: var(--z-float);
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.menuItem[data-danger] {
+  color: var(--error);
+}
+
+.menuItem:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ── Atalhos do estado vazio ──────────────────────────────── */
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  text-decoration: none;
+}
+
+.shortcut:hover {
+  border-color: var(--line-strong);
+  background: var(--canvas);
+}
+
+.shortcut:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.shortcutTitle {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.shortcutHint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ── Aviso fixo de e-mail ─────────────────────────────────── */
+.emailNotice {
+  align-items: center;
+  margin-top: var(--space-8);
+  color: var(--muted);
+}
+
+.emailNotice svg {
+  flex: none;
+  color: var(--info);
+}
+
+/* ── Assistente ───────────────────────────────────────────── */
+.wizard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.stepCount {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.steps {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 var(--space-6);
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+
+.step[data-state="active"] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.stepDot {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.step[data-state="active"] .stepDot,
+.step[data-state="done"] .stepDot {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stepBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stepTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.bigField {
+  min-height: 56px;
+  font-size: 16px;
+}
+
+.bigField input {
+  font-size: 16px;
+}
+
+.exampleLabel {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.fieldset legend {
+  padding: 0;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: var(--space-1);
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.toggles :global(.rg-btn[aria-pressed="true"]) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.check[data-disabled] {
+  color: var(--muted);
+}
+
+.radio,
+.modItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  cursor: pointer;
+}
+
+.radio[data-checked],
+.modItem[data-checked] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.radio input,
+.modItem input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.radioText {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+}
+
+.radioText small {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.modList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.more {
+  margin-top: var(--space-2);
+}
+
+.more summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+
+.organBox {
+  position: relative;
+}
+
+.organList {
+  position: absolute;
+  z-index: var(--z-float);
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-menu);
+}
+
+.organList button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.organList button:hover,
+.organList button:focus-visible {
+  background: var(--accent-soft);
+}
+
+.organList small {
+  color: var(--muted);
+}
+
+.organNote {
+  padding: var(--space-3);
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+}
+
+.review p {
+  margin: 0;
+  color: var(--body);
+}
+
+.formError {
+  padding: var(--space-3) var(--space-4);
+  background: var(--error-soft);
+  color: var(--error);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Prévia (fixa ao rolar) ───────────────────────────────── */
+.preview {
+  position: sticky;
+  top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.previewTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.previewCount {
+  margin: 0;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.previewCount small {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.previewList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.previewItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+
+.previewItem a {
+  color: var(--ink);
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.previewItem a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.previewMeta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ── Detalhe ──────────────────────────────────────────────── */
+.detailHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detailTags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.statusLine {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.runResult {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.danger {
+  color: var(--error);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+@media (max-width: 1100px) {
+  .wizard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .preview {
+    position: static;
+  }
+}
+
+/* ── Celular: as linhas da tabela viram blocos empilhados, sem rolagem lateral ─── */
+@media (max-width: 760px) {
+  .mtable thead {
+    display: none;
+  }
+  .mtable,
+  .mtable tbody {
+    display: block;
+  }
+  .mtable tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .mtable tr:last-child {
+    border-bottom: 0;
+  }
+  .mtable td {
+    display: block;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .mtable td:first-child {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .mtable td[data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .mtable :global(.rg-r) {
+    text-align: left;
+  }
+  .mtable .actionsCell {
+    grid-column: 1 / -1;
+    text-align: left;
+    margin-top: var(--space-2);
+  }
+  .rulerCell {
+    min-width: 0;
+    grid-column: 1 / -1;
+  }
+  .row2,
+  .modList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .nav {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .navRight {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .menu {
+    right: auto;
+    left: 0;
+  }
+}

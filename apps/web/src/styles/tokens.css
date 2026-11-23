@@ -1,0 +1,182 @@
+/* Régua — tokens de design. Fonte: regua-design-system.html (tokens.json). Tema claro apenas.
+   Este arquivo é idêntico em docs/design/tokens.css e apps/web/src/styles/tokens.css. */
+:root {
+  --canvas: #faf8f3;
+  --surface: #f4f0e7;
+  --card: #ffffff;
+  --hairline: #e7e2d6;
+  --line-strong: #8a857a;
+  --ink: #1b1a17;
+  --body: #3a3833;
+  --muted: #6b675e;
+  --accent: #1e6b5a;
+  --accent-active: #17574a;
+  --accent-soft: #e3efea;
+  --on-accent: #ffffff;
+  --success: #25734a;
+  --success-soft: #e5f2ea;
+  --warning: #8a5a12;
+  --warning-soft: #fbf1de;
+  --error: #b83b3b;
+  --error-soft: #f8e6e4;
+  --info: #2f6db5;
+  --info-soft: #e6eef8;
+  --focus: var(--accent);
+  --tone-clay: #f3e4d3;
+  --tone-sky: #ddeaf3;
+  --tone-rose: #f4e0e0;
+  --tone-moss: #e3eddc;
+  --tone-sand: #efe8d2;
+  --tone-slate: #e4e4ea;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-composer: 0 1px 2px rgba(27, 26, 23, 0.04), 0 6px 20px rgba(27, 26, 23, 0.06);
+  --shadow-menu: 0 8px 24px rgba(27, 26, 23, 0.1), 0 1px 2px rgba(27, 26, 23, 0.06);
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
+  --control-height: 36px;
+  --touch-target: 44px;
+  --chat-column: 720px;
+  --ruler-bar: 20px;
+  --ruler-days: 14;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ── Compatibilidade (TEMPORÁRIA) ─────────────────────────────────────────────
+   Nomes do sistema visual anterior, mapeados para o Régua para que telas ainda
+   não migradas renderizem na paleta nova. Cada tela migrada deixa de usar estes
+   nomes; quando nenhuma usar, este bloco inteiro sai. Não use em código novo. */
+:root {
+  --bg: var(--canvas);
+  --surface-raised: var(--surface);
+  --active: var(--accent-soft);
+  --border: var(--hairline);
+  --rule: var(--hairline);
+  --control-border: var(--line-strong);
+  --text: var(--ink);
+  --text-muted: var(--muted);
+  --text-faint: var(--muted);
+  --text-sm: 13px;
+  --text-lg: 18px;
+  --primary: var(--accent);
+  --primary-hover: var(--accent-active);
+  --primary-contrast: var(--on-accent);
+  --accent-50: var(--accent-soft);
+  --accent-100: var(--accent-soft);
+  --accent-200: var(--accent-soft);
+  --accent-ink: var(--accent);
+  --danger: var(--error);
+  --color-text: var(--ink);
+  --color-text-muted: var(--muted);
+  --color-surface: var(--card);
+  --color-border: var(--hairline);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--error);
+  --pill-success-bg: var(--success-soft);
+  --pill-success-ink: var(--success);
+  --pill-warning-bg: var(--warning-soft);
+  --pill-warning-ink: var(--warning);
+  --pill-warning-border: var(--warning-soft);
+  --pill-danger-bg: var(--error-soft);
+  --pill-danger-ink: var(--error);
+  --pill-neutral-bg: var(--surface);
+  --pill-neutral-ink: var(--body);
+  --pill-accent-bg: var(--accent-soft);
+  --pill-accent-ink: var(--accent);
+  --deadline-ok: var(--success);
+  --deadline-soon: var(--warning);
+  --deadline-critical: var(--error);
+  --deadline-closed: var(--muted);
+  --ai-generated-bg: var(--accent-soft);
+  --ai-generated-ink: var(--accent);
+  --kanban-column: var(--surface);
+  --kanban-card: var(--card);
+  --highlight: #f6e3a1;
+  --stage-descoberto: var(--muted);
+  --stage-descoberto-bg: var(--surface);
+  --stage-descoberto-ink: var(--body);
+  --stage-em_analise: var(--info);
+  --stage-em_analise-bg: var(--info-soft);
+  --stage-em_analise-ink: var(--info);
+  --stage-em_preparacao: var(--accent);
+  --stage-em_preparacao-bg: var(--accent-soft);
+  --stage-em_preparacao-ink: var(--accent);
+  --stage-proposta_enviada: var(--warning);
+  --stage-proposta_enviada-bg: var(--warning-soft);
+  --stage-proposta_enviada-ink: var(--warning);
+  --stage-em_disputa: var(--warning);
+  --stage-em_disputa-bg: var(--warning-soft);
+  --stage-em_disputa-ink: var(--warning);
+  --stage-ganho: var(--success);
+  --stage-ganho-bg: var(--success-soft);
+  --stage-ganho-ink: var(--success);
+  --stage-perdido: var(--error);
+  --stage-perdido-bg: var(--error-soft);
+  --stage-perdido-ink: var(--error);
+  --chart-1: var(--accent);
+  --font: var(--font-sans);
+  --fs-title: 24px;
+  --fs-section: 18px;
+  --fs-kpi: 28px;
+  --fs-body: 14px;
+  --fs-small: 12px;
+  --fs-meta: 13px;
+  --fs-read: 15px;
+  --lh-body: 21px;
+  --lh-read: 1.6;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 600;
+  --tracking-display: -0.3px;
+  --num: tabular-nums;
+  --gap: 24px;
+  --pad: 24px;
+  --card-pad: 16px;
+  --space-5: 24px;
+  --space-7: 48px;
+  --radius-card: var(--radius-md);
+  --radius-control: var(--radius-sm);
+  --radius-chip: var(--radius-xs);
+  --control-height-sm: 32px;
+  --control-height-lg: 44px;
+  --row-height: 48px;
+  --nav-row: 32px;
+  --shadow-float: var(--shadow-menu);
+  --z-nav: 10;
+  --z-sticky: 20;
+  --z-float: 40;
+  --z-dialog: 50;
+  --z-toast: 60;
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── Vidro (iOS): permitido só em campos, popovers e barras flutuantes; nunca em cartões de dados nem tabelas. */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-edge: rgba(138, 133, 122, 0.38);
+  --glass-shadow: 0 8px 28px rgba(27, 26, 23, 0.08), 0 1px 2px rgba(27, 26, 23, 0.05);
+  --glass-blur: 18px;
+  --glass-blur-sm: 10px; /* campos e chips: pequenos, baratos de desfocar */
+  --glass-bg-field: rgba(255, 255, 255, 0.74); /* fundo de campo de formulário (texto ≥4,5:1) */
+  --glass-side: rgba(244, 240, 231, 0.72); /* barra lateral: surface translúcido sobre a aura */
+  --ring: 0 0 0 3px rgba(30, 107, 90, 0.28);
+}

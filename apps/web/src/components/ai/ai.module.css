@@ -1,0 +1,27 @@
+/* Resto do módulo antigo: só o atalho do Início (HomeAiShortcut). Apague este arquivo e o atalho quando o Início novo deixar de usá-lo; o chat usa chat.module.css. */
+.shortcut {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.shortcutBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.shortcutBtn:hover {
+  background: var(--accent-soft);
+}

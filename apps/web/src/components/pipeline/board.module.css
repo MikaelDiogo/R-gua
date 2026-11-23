@@ -1,0 +1,362 @@
+/* Funil (Kanban) no Régua: colunas e cartões rg-kcol/rg-kcard, só tokens. */
+
+.boardTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.boardSearch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+}
+.boardSearch svg {
+  position: absolute;
+  left: var(--space-3);
+  pointer-events: none;
+}
+.boardSearch input {
+  height: var(--control-height);
+  padding: 0 var(--space-3) 0 36px;
+  width: 240px;
+  max-width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--glass-bg-field);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-sm);
+}
+.boardSearch input:focus-visible,
+.aiSelect select:focus-visible,
+.kcard select:focus-visible,
+.assigneeInput:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.aiSelect {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--muted);
+}
+.aiSelect select,
+.kcard select,
+.closedList select {
+  height: var(--control-height);
+  padding: 0 var(--space-2);
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--glass-bg-field);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-sm);
+  max-width: 100%;
+}
+.boardHint {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.mobileCols {
+  display: none;
+}
+.boardScroll {
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(220px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+  min-width: 1600px;
+}
+
+.kcol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+.kcol[data-over] {
+  background: var(--accent-soft);
+  outline: 1px dashed var(--accent);
+}
+.kcolHead {
+  padding: 0 var(--space-1) var(--space-1);
+}
+.kcolHead h2 {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.kcount {
+  margin-left: auto;
+  color: var(--muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.ksum {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.kcards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kcard {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  cursor: grab;
+}
+.kcard:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.kcard[data-lifted] {
+  box-shadow: var(--shadow-menu);
+  transform: rotate(-1deg);
+}
+.kcard[data-dragging] {
+  opacity: 0.45;
+}
+.kcard[data-pending] {
+  opacity: 0.7;
+  cursor: progress;
+}
+.kcard[data-overdue] {
+  border-color: var(--error);
+}
+.kcard[data-error] {
+  border-color: var(--error);
+}
+.kcardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kcardTitle:hover {
+  color: var(--accent);
+}
+.kcardMeta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.kcardRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.kvalue {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.kcardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--muted);
+}
+.kcardWho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.assigneeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.assigneeBtn:hover {
+  color: var(--ink);
+}
+.assigneeBtn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.assigneeName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 110px;
+}
+.assigneeInput {
+  height: 28px;
+  width: 130px;
+  padding: 0 var(--space-2);
+  font: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--glass-bg-field);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-sm);
+}
+.kcard select {
+  height: 28px;
+  width: auto;
+  max-width: 104px;
+  padding: 0 var(--space-1);
+  cursor: pointer;
+}
+.kcard select option,
+.kcard select optgroup {
+  color: var(--ink);
+}
+.kdrop {
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.kempty {
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.closedPanel[data-over] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.closedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.closedList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--hairline);
+}
+.closedList li:first-child {
+  border-top: 0;
+}
+.closedMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.closedMain a {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.closedMain a:hover {
+  color: var(--accent);
+}
+.closedValue {
+  font-size: 13px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.sumNote {
+  color: var(--muted);
+}
+
+/* Abaixo de 768px o quadro vira lista agrupada por etapa: todas as colunas empilhadas, sem rolagem lateral. */
+@media (max-width: 767px) {
+  .boardScroll {
+    overflow-x: visible;
+  }
+  .board {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    gap: var(--space-6);
+  }
+  .boardHint {
+    display: none;
+  }
+  .boardSearch input {
+    width: 100%;
+  }
+  .boardSearch {
+    flex: 1 1 100%;
+  }
+  .aiSelect select,
+  .kcard select,
+  .closedList select,
+  .boardSearch input {
+    min-height: var(--touch-target);
+  }
+  .kcard select {
+    width: var(--touch-target);
+  }
+  .closedList li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .closedMain {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 768px) and (max-width: 1599px) {
+  .board {
+    min-width: 1500px;
+  }
+}
