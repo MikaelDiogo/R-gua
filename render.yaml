@@ -1,0 +1,55 @@
+# Régua: API no Render (plano gratuito). Blueprint: New + → Blueprint → escolha o repositório.
+# Guia completo: docs/deploy-gratuito.md. NADA secreto vai neste arquivo: os valores `sync: false` são
+# digitados no painel do Render (Environment) e ficam só lá.
+#
+# Plano gratuito: a API "dorme" após 15 min sem tráfego e acorda no próximo acesso (30 a 60 s).
+# O Render não tem região em São Paulo no plano gratuito; `virginia` (AWS us-east-1) é a mais próxima do
+# Brasil e fica ao lado do banco recomendado na Neon (AWS US East 1), que é o que mais pesa na velocidade.
+services:
+  - type: web
+    name: regua-api
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    autoDeploy: true
+    # NODE_ENV=production faria o pnpm pular as ferramentas de build (typescript). Por isso o install roda
+    # com NODE_ENV=development; o servidor sobe com NODE_ENV=production lá embaixo.
+    # `--filter "@agora/api..."` = a API e os pacotes do repositório de que ela depende (contracts, domain,
+    # db, ingestion), na ordem certa; não instala nem compila o site, que economiza memória no build.
+    buildCommand: >-
+      corepack enable &&
+      NODE_ENV=development pnpm install --frozen-lockfile --filter "@agora/api..." &&
+      pnpm --filter "@agora/api..." build
+    startCommand: node apps/api/dist/main.js
+    healthCheckPath: /v1/healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: "10000"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: MONITOR_SCHEDULER
+        value: "1"
+      # Segredos e endereços: preencher no painel.
+      - key: DATABASE_URL # URL do papel agora_app na Neon, conexão DIRETA (sem "-pooler"), com ?sslmode=require
+        sync: false
+      - key: APP_ORIGIN # endereço do site na Vercel, https://..., sem barra no final
+        sync: false
+      - key: CRON_SECRET # o mesmo valor do segredo CRON_SECRET do GitHub (openssl rand -hex 24)
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
+      - key: GEMINI_FALLBACK_MODEL
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false

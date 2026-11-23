@@ -1,0 +1,67 @@
+# Régua: coleta agendada do PNCP para o banco gratuito (Neon) e "tique" na API.
+# Substitui o worker de ingestão que, no VPS, roda em contêiner. O Render gratuito não tem worker.
+#
+# Segredos do repositório (Settings → Secrets and variables → Actions → New repository secret):
+#   DATABASE_URL  URL do papel agora_app na Neon (conexão direta, com ?sslmode=require)
+#   API_URL       endereço da API no Render, https://..., sem barra no final
+#   CRON_SECRET   o mesmo valor configurado no Render (openssl rand -hex 24)
+#
+# Custo em minutos: cada rodada leva cerca de 10 a 15 min (limite de 12 chamadas/min ao PNCP).
+# 4 rodadas por dia ≈ 1.200 a 1.800 min/mês. Repositório público: ilimitado. Privado no plano Free do
+# GitHub: 2.000 min/mês (confira em Settings → Billing). Se apertar, troque o cron para a cada 8 ou 12 h.
+name: ingest
+
+on:
+  schedule:
+    - cron: "17 */6 * * *" # a cada 6 h, no minuto 17 (UTC; evita a hora cheia, quando o GitHub congestiona)
+  workflow_dispatch: {}
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Ativar pnpm (corepack, versão do package.json)
+        run: corepack enable
+
+      - name: Instalar só o que o worker usa
+        run: pnpm install --frozen-lockfile --filter "@agora/worker..."
+
+      - name: Compilar o worker e os pacotes dele
+        run: pnpm --filter "@agora/worker..." build
+
+      - name: Coletar propostas abertas de CE e PI
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: node apps/worker/dist/ingest.js open --pages 8 --ufs CE,PI
+
+      - name: Apagar payloads brutos antigos (o plano gratuito tem 1 GB)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "DELETE FROM ingest_raw WHERE fetched_at < now() - interval '3 days'"
+
+      # Acorda a API (que dorme no plano gratuito) e roda os monitores. Roda mesmo se a coleta falhar.
+      # A API pode levar 60 s para acordar: tenta até 6 vezes, com espera entre elas.
+      - name: Acordar a API e rodar os monitores
+        if: always()
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -fsS -X POST "$API_URL/v1/internal/tick" \
+            -H "x-cron-secret: $CRON_SECRET" \
+            --retry 5 --retry-delay 20 --retry-all-errors \
+            --connect-timeout 90 --max-time 180

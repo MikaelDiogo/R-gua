@@ -1,0 +1,31 @@
+# Proxy reverso com HTTPS automático (Let's Encrypt). Só 80/443 ficam publicados.
+# Tudo vai para o Next (web:3000); o Next encaminha /api/* para a API, que não é exposta.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	request_body {
+		max_size 2MB
+	}
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+	}
+
+	reverse_proxy web:3000 {
+		# A busca com IA pode levar de 10 a 40 s.
+		transport http {
+			response_header_timeout 120s
+		}
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

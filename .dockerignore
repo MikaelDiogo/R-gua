@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/.next
+**/*.tsbuildinfo
+coverage
+.git
+.github
+.claude
+.taste-skill
+.scratch
+.env
+.env.*
+docs
+infra/docker/data
+**/.DS_Store
+**/*.log

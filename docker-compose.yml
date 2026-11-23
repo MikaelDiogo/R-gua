@@ -1,0 +1,58 @@
+# Ambiente local (docs/12-infra-deploy.md §1). Versões fixadas aqui; revisar na Fase 0 (docs/03-stack.md §4).
+name: agora
+
+services:
+  postgres:
+    # ParadeDB já traz pg_search (BM25) e pgvector. Licença do pg_search é AGPL: ver docs/15 (risco) e ADR-003.
+    image: paradedb/paradedb:0.26.4-pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agora
+    ports:
+      - "5442:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agora"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Perfil "ml": embeddings e reranker (pnpm ml:up). CPU basta para consultas; backfill pode usar GPU temporária.
+  tei-embed:
+    profiles: ["ml"]
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    command: ["--model-id", "BAAI/bge-m3", "--port", "80"]
+    ports:
+      - "8081:80"
+    volumes:
+      - teicache:/data
+
+  tei-rerank:
+    profiles: ["ml"]
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    command: ["--model-id", "BAAI/bge-reranker-v2-m3", "--port", "80"]
+    ports:
+      - "8082:80"
+    volumes:
+      - teicache:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  teicache:

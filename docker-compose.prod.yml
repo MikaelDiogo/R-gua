@@ -1,0 +1,210 @@
+# Produção em um VPS único (docs/12-infra-deploy.md). Uso:
+#   cp .env.production.example .env   # preencha TODOS os valores
+#   docker compose -f docker-compose.prod.yml up -d      (ou infra/scripts/deploy.sh)
+# Só o Caddy publica portas (80/443). Banco e Redis ficam numa rede interna, sem saída para a internet.
+name: agora
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-hardening: &hardening
+  restart: unless-stopped
+  logging: *logging
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+
+# Mesma imagem para api, worker e migrate (a api a constrói; os outros só a usam).
+x-node-env: &node-env
+  NODE_ENV: production
+  NODE_OPTIONS: --max-old-space-size=512
+  DATABASE_URL: ${DATABASE_URL:?defina DATABASE_URL}
+  TRUST_PROXY: ${TRUST_PROXY:-1}
+
+services:
+  postgres:
+    <<: *hardening
+    # ParadeDB já traz pg_search (BM25) e pgvector. Licença do pg_search é AGPL: ver docs/15 (risco) e ADR-003.
+    image: paradedb/paradedb:0.26.4-pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+      POSTGRES_DB: agora
+      MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD:?defina MIGRATOR_DB_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?defina APP_DB_PASSWORD}
+      MAINT_DB_PASSWORD: ${MAINT_DB_PASSWORD:?defina MAINT_DB_PASSWORD}
+      POSTGRES_TUNE: "1"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    # O postgres precisa de CHOWN/SETUID/FOWNER no start: não dá para zerar todas as capacidades.
+    cap_drop: []
+    mem_limit: 3g
+    shm_size: 256m
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agora"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    <<: *hardening
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?defina REDIS_PASSWORD}
+      - --maxmemory
+      - 200mb
+      - --maxmemory-policy
+      - noeviction
+    volumes:
+      - redisdata:/data
+    # O entrypoint do Redis troca de usuário (precisa de CHOWN/SETUID): mantém as capacidades padrão.
+    cap_drop: []
+    mem_limit: 256m
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  migrate:
+    image: agora-node:${TAG:-latest}
+    pull_policy: never
+    restart: "no"
+    logging: *logging
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    command: ["node", "packages/db/dist/cli.js", "migrate"]
+    environment:
+      NODE_ENV: production
+      MIGRATOR_DATABASE_URL: ${MIGRATOR_DATABASE_URL:?defina MIGRATOR_DATABASE_URL}
+    depends_on:
+      postgres: { condition: service_healthy }
+    mem_limit: 256m
+    networks: [data]
+
+  api:
+    <<: *hardening
+    image: agora-node:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      target: node-runtime
+    command: ["node", "apps/api/dist/main.js"]
+    environment:
+      <<: *node-env
+      API_PORT: "3101"
+      API_HOST: 0.0.0.0
+      APP_ORIGIN: ${APP_ORIGIN:?defina APP_ORIGIN}
+      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      MONITOR_SCHEDULER: ${MONITOR_SCHEDULER:-1}
+      REDIS_URL: ${REDIS_URL:-}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 768m
+    # data: banco. app: saída para Gemini/Tavily e entrada vinda do web.
+    networks: [data, app]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3101/v1/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *hardening
+    image: agora-node:${TAG:-latest}
+    pull_policy: never
+    # Ingestão periódica do PNCP (comando `schedule`): a cada INGEST_INTERVAL_MIN minutos.
+    command: ["node", "apps/worker/dist/ingest.js", "schedule"]
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=512
+      DATABASE_URL: ${DATABASE_URL}
+      WORKER_DATABASE_URL: ${WORKER_DATABASE_URL:?defina WORKER_DATABASE_URL}
+      PNCP_BASE_URL: ${PNCP_BASE_URL:-https://pncp.gov.br/api/consulta}
+      PNCP_MAX_CALLS_PER_MIN: ${PNCP_MAX_CALLS_PER_MIN:-12}
+      INGEST_INTERVAL_MIN: ${INGEST_INTERVAL_MIN:-360}
+      INGEST_UFS: ${INGEST_UFS:-CE,PI}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 768m
+    networks: [data, app]
+
+  web:
+    <<: *hardening
+    image: agora-web:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile
+      target: web-runtime
+      args:
+        # Destino do proxy /api/* (gravado no build do Next).
+        API_URL: http://api:3101
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=512
+      API_URL: http://api:3101
+    depends_on:
+      api: { condition: service_healthy }
+    mem_limit: 768m
+    networks: [app]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  caddy:
+    <<: *hardening
+    image: caddy:2-alpine
+    # Para ligar nas portas 80/443 sem root, o Caddy precisa de NET_BIND_SERVICE.
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"]
+    environment:
+      DOMAIN: ${DOMAIN:?defina DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?defina ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web: { condition: service_healthy }
+    mem_limit: 128m
+    networks: [app]
+
+networks:
+  # internal: sem rota para fora; banco e Redis nunca falam com a internet.
+  data:
+    internal: true
+  app:
+
+volumes:
+  pgdata:
+  redisdata:
+  caddy_data:
+  caddy_config:
