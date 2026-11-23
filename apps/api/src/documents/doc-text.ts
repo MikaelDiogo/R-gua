@@ -30,11 +30,25 @@ const isZip = (b: Uint8Array) =>
   b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && (b[2] === 0x03 || b[2] === 0x05);
 
 /** Texto por página de um PDF. O tipo vem do conteúdo (magic bytes), não da extensão. */
-async function pdfPages(bytes: Uint8Array, label: string): Promise<Extraction> {
+let pdfLock: Promise<unknown> = Promise.resolve();
+
+/**
+ * Um PDF por vez: o leitor de PDF usa muita memória e a hospedagem gratuita tem ~512 MB. Duas leituras ao
+ * mesmo tempo (dois usuários) derrubariam o processo; em fila, a segunda só espera.
+ */
+function pdfPages(bytes: Uint8Array, label: string): Promise<Extraction> {
+  const run = pdfLock.then(() => pdfPagesNow(bytes, label));
+  pdfLock = run.catch(() => undefined);
+  return run;
+}
+
+async function pdfPagesNow(bytes: Uint8Array, label: string): Promise<Extraction> {
+  let destroy: (() => Promise<void>) | undefined;
   try {
     // unpdf é só ESM: carregado sob demanda (e só quando há PDF para ler).
     const { extractText, getDocumentProxy } = await import('unpdf');
     const pdf = await getDocumentProxy(bytes);
+    destroy = () => pdf.destroy();
     if (pdf.numPages > LIMITS.maxPdfPages) return { status: 'too_large', pages: [] };
     const { text } = await extractText(pdf, { mergePages: false });
     const pages = (text as string[]).map((t, i) => ({
@@ -52,6 +66,8 @@ async function pdfPages(bytes: Uint8Array, label: string): Promise<Extraction> {
     return { status: 'ok', pages };
   } catch {
     return { status: 'failed', pages: [] };
+  } finally {
+    await destroy?.().catch(() => undefined); // devolve a memória do PDF assim que acaba
   }
 }
 

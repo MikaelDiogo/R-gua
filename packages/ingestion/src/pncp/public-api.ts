@@ -31,6 +31,10 @@ export type PublicApiResult<T> =
   | { ok: false; status: number; error: string };
 
 export interface PublicApiOptions {
+  /** Novas tentativas no download quando o PNCP falha ao acaso (padrão 5). */
+  downloadRetries?: number;
+  /** Pausa base entre tentativas, em ms (cresce a cada tentativa). */
+  retryDelayMs?: number;
   baseUrl?: string;
   maxCallsPerMinute?: number;
   timeoutMs?: number;
@@ -38,6 +42,10 @@ export interface PublicApiOptions {
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
 }
+
+const TRANSIENT_STATUS = new Set([408, 422, 425, 429, 500, 502, 503, 504]);
+const isTransient = (r: { status: number; error: string }) =>
+  TRANSIENT_STATUS.has(r.status) || r.error === 'network' || r.error === 'timeout';
 
 const ALLOWED_HOSTS = (h: string) => h === 'pncp.gov.br' || h.endsWith('.pncp.gov.br');
 
@@ -53,6 +61,8 @@ export class PncpPublicApi {
   private readonly doFetch: typeof fetch;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly now: () => number;
+  private readonly downloadRetries: number;
+  private readonly retryDelayMs: number;
   private nextSlot = 0;
 
   constructor(opts: PublicApiOptions = {}) {
@@ -62,6 +72,8 @@ export class PncpPublicApi {
     this.doFetch = opts.fetch ?? fetch;
     this.sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
     this.now = opts.now ?? Date.now;
+    this.downloadRetries = opts.downloadRetries ?? 5;
+    this.retryDelayMs = opts.retryDelayMs ?? 1200;
   }
 
   private async acquire() {
@@ -129,8 +141,24 @@ export class PncpPublicApi {
     return { ok: true, data: out };
   }
 
-  /** Baixa um arquivo do PNCP: só host permitido (também após redirecionamento), com teto de bytes. */
+  /**
+   * Baixa um arquivo do PNCP com novas tentativas. O armazenamento de arquivos do PNCP falha ao acaso: o mesmo
+   * arquivo responde 200 numa chamada e 422 "Erro ao tentar carregar arquivo" na seguinte. Só falha de origem
+   * é repetida; host proibido, arquivo grande demais e 404 não são.
+   */
   async download(
+    url: string,
+    maxBytes: number,
+  ): Promise<PublicApiResult<{ bytes: Uint8Array; filename: string | null }>> {
+    let last = await this.downloadOnce(url, maxBytes);
+    for (let i = 1; i <= this.downloadRetries && !last.ok && isTransient(last); i++) {
+      await this.sleep(this.retryDelayMs * i);
+      last = await this.downloadOnce(url, maxBytes);
+    }
+    return last;
+  }
+
+  private async downloadOnce(
     url: string,
     maxBytes: number,
   ): Promise<PublicApiResult<{ bytes: Uint8Array; filename: string | null }>> {

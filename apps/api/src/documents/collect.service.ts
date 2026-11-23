@@ -7,7 +7,8 @@ import { InjectDb } from '../platform/db.module';
 import { DomainError } from '../platform/problem.filter';
 import { extractPages } from './doc-text';
 
-const MAX_DOWNLOAD = 40 * 1024 * 1024;
+/** Teto para LER o texto (PDF grande, em geral digitalizado, estoura a memória da hospedagem gratuita). Abrir o PDF tem teto próprio. */
+const MAX_DOWNLOAD = 15 * 1024 * 1024;
 /** Documentos que o leitor usa, na ordem de importância. Anexos de minuta e planilhas ficam de fora. */
 const PRIORITY = [/edital/i, /termo de refer/i, /projeto b[aá]sico/i];
 

@@ -7,7 +7,7 @@ import { DomainError } from '../platform/problem.filter';
 import { CollectService } from './collect.service';
 import { findFirstPdf } from './doc-text';
 
-const MAX_DOWNLOAD = 60 * 1024 * 1024;
+const MAX_DOWNLOAD = 40 * 1024 * 1024;
 const ID = z.string().uuid();
 const SEQUENCE = z.coerce.number().int().min(0).max(100_000);
 
@@ -71,11 +71,18 @@ export class DocumentFileService {
 
     const dl = await this.api.download(doc.url, MAX_DOWNLOAD);
     if (!dl.ok) {
+      // O endereço original (público, do PNCP) acompanha o erro para a tela oferecer "Abrir direto no PNCP".
+      const meta = { pncp_url: doc.url };
       if (dl.error === 'too_large')
-        throw new DomainError('validation_failed', 'O arquivo é grande demais para abrir aqui.');
+        throw new DomainError(
+          'validation_failed',
+          'O arquivo é grande demais para abrir aqui.',
+          meta,
+        );
       throw new DomainError(
         'source_unavailable',
         'O PNCP não entregou o arquivo agora. Tente de novo em instantes.',
+        meta,
       );
     }
     const pdf = findFirstPdf(dl.data.bytes);

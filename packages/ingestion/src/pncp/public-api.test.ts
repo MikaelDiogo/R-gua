@@ -70,4 +70,26 @@ describe('PncpPublicApi', () => {
     const r = await api(fn).download('https://pncp.gov.br/a', 1000);
     expect(r.ok && r.data.filename).toBe('edital.pdf');
   });
+
+  it('download repete quando o PNCP falha ao acaso (422) e entrega na tentativa seguinte', async () => {
+    let n = 0;
+    const fn = fakeFetch(() =>
+      ++n < 3
+        ? new Response('{"error":"422 UNPROCESSABLE_ENTITY"}', { status: 422 })
+        : new Response(new Uint8Array([37, 80, 68, 70])),
+    );
+    const r = await api(fn.fn).download('https://pncp.gov.br/a', 1000);
+    expect(r.ok).toBe(true);
+    expect(fn.calls).toHaveLength(3);
+  });
+
+  it('download desiste depois das tentativas e não repete 404 nem arquivo grande', async () => {
+    const always422 = fakeFetch(() => new Response('x', { status: 422 }));
+    const r = await api(always422.fn).download('https://pncp.gov.br/a', 1000);
+    expect(r).toMatchObject({ ok: false, status: 422 });
+    expect(always422.calls).toHaveLength(6); // 1 + 5 novas tentativas
+    const notFound = fakeFetch(() => new Response('x', { status: 404 }));
+    await api(notFound.fn).download('https://pncp.gov.br/a', 1000);
+    expect(notFound.calls).toHaveLength(1);
+  });
 });

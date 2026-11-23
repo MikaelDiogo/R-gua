@@ -38,6 +38,9 @@ services:
         value: "1"
       - key: MONITOR_SCHEDULER
         value: "1"
+      # O plano gratuito tem ~512 MB: o limite faz o Node coletar lixo antes de o Render matar o processo.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=380
       # Segredos e endereços: preencher no painel.
       - key: DATABASE_URL # URL do papel agora_app na Neon, conexão DIRETA (sem "-pooler"), com ?sslmode=require
         sync: false
