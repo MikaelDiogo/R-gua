@@ -49,8 +49,8 @@ describe('registryWindow', () => {
   it('UF e município entram no endpoint (a tabela não tem coluna para eles)', () => {
     const base = { source: 'pncp', endpoint: EP_PUBLICACAO, start: '20261101', end: '20261107' };
     expect(registryWindow({ ...base, uf: 'CE' }).endpoint).toBe(`${EP_PUBLICACAO}?uf=CE`);
-    expect(registryWindow({ ...base, municipalityIbge: '2304202' }).endpoint).toBe(
-      `${EP_PUBLICACAO}?ibge=2304202`,
+    expect(registryWindow({ ...base, municipalityIbge: '2304103' }).endpoint).toBe(
+      `${EP_PUBLICACAO}?ibge=2304103`,
     );
     expect(registryWindow(base).endpoint).toBe(EP_PUBLICACAO);
   });

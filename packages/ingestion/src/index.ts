@@ -28,3 +28,5 @@ export {
   windowState,
 } from './store';
 export * from './types';
+export type { VerifyItem, VerifyOptions, VerifyResult } from './verify';
+export { verifyMunicipality } from './verify';

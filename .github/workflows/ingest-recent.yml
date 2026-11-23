@@ -1,0 +1,67 @@
+# Régua: histórico de publicações do PNCP (CE e PI), de QUALQUER situação: abertas, encerradas, suspensas, canceladas.
+# É o que faz "licitação em Crateús" achar também o que já passou do prazo, como o site do PNCP mostra.
+#
+# Dois usos:
+#   * Diário (automático): últimos 14 dias, para manter o histórico sempre em dia. ≈ 10 min.
+#   * Carga histórica (manual): Actions → ingest-recent → Run workflow → days = 180 (ou mais).
+#     CE + PI, 180 dias ≈ 26 semanas × 2 UF × 13 modalidades = 676 consultas + páginas extras
+#     (≈ 1.000 chamadas ≈ 85 a 100 min a 12 chamadas/min). É RETOMÁVEL: janela já `ok` há menos de 24 h
+#     não se refaz, então se o job for cancelado ou falhar basta rodar de novo.
+#
+# Segredo do repositório: DATABASE_URL (papel agora_app na Neon, conexão direta, com ?sslmode=require).
+# Não guarda o corpo bruto das páginas (ingest_raw): uma carga histórica encheria o plano gratuito (1 GB).
+# Divide o grupo de concorrência com o workflow `ingest`: nunca rodam ao mesmo tempo (limite do PNCP).
+name: ingest-recent
+
+on:
+  schedule:
+    - cron: "43 7 * * *" # todo dia às 07:43 UTC (04:43 em Brasília)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Quantos dias de publicação coletar (14 = manutenção; 180 = carga histórica)"
+        required: true
+        default: "180"
+      ufs:
+        description: "UFs separadas por vírgula"
+        required: true
+        default: "CE,PI"
+
+concurrency:
+  group: pncp-ingest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  recent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      DAYS: ${{ github.event.inputs.days || '14' }}
+      UFS: ${{ github.event.inputs.ufs || 'CE,PI' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Ativar pnpm (corepack, versão do package.json)
+        run: corepack enable
+
+      - name: Instalar só o que o worker usa
+        run: pnpm install --frozen-lockfile --filter "@agora/worker..."
+
+      - name: Compilar o worker e os pacotes dele
+        run: pnpm --filter "@agora/worker..." build
+
+      # Valores vêm por variável de ambiente (nunca interpolados no script) e são validados antes de usar.
+      - name: Coletar publicações recentes de CE e PI (todas as situações)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          [[ "$DAYS" =~ ^[0-9]{1,4}$ ]] || { echo "days inválido: $DAYS"; exit 2; }
+          [[ "$UFS" =~ ^[A-Z]{2}(,[A-Z]{2})*$ ]] || { echo "ufs inválido: $UFS"; exit 2; }
+          node apps/worker/dist/ingest.js recent --days "$DAYS" --ufs "$UFS"

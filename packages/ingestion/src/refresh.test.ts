@@ -5,7 +5,7 @@ import { fakeFetch, testClient } from './pncp/helpers.test-util';
 import { servePaged } from './pncp/serve.test-util';
 import { __resetRefreshState, refreshMunicipality } from './refresh';
 
-const IBGE = '2304202'; // Crateús
+const IBGE = '2304103'; // Crateús
 const NOW = new Date('2026-11-23T15:00:00Z');
 const now = () => NOW;
 

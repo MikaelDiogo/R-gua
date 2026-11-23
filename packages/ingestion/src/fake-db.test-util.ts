@@ -26,6 +26,10 @@ export function fakeDb(): FakeDb {
 
   const query = async (sql: string, params: unknown[] = []) => {
     log.push(sql.replace(/\s+/g, ' ').trim().slice(0, 60));
+    if (sql.includes('numero_controle_pncp = ANY')) {
+      const keys = (params[0] as string[]).filter((k) => known.has(k));
+      return { rows: keys.map((k) => ({ numero_controle_pncp: k })), rowCount: keys.length };
+    }
     if (sql.includes('FROM procurements WHERE numero_controle_pncp')) {
       const hash = known.get(String(params[0]));
       return {

@@ -5,13 +5,15 @@ import {
   runMunicipality,
   runOpen,
   runRecent,
+  verifyMunicipality,
 } from '@agora/ingestion';
 
 /**
  * Coleta do PNCP (docs/05 §5). Uso:
  *   node dist/ingest.js open         [--ufs CE,PI] [--pages 80] [--modalities 6,8] [--rate 12]
  *   node dist/ingest.js recent       --days 14 [--ufs CE,PI] [--modalities 6,8] [--window-days 7] [--fresh-hours 24] [--raw] [--rate 12]
- *   node dist/ingest.js municipality --ibge 2304202 [--days 180] [--rate 20]
+ *   node dist/ingest.js municipality --ibge 2304103 [--days 180] [--rate 20]
+ *   node dist/ingest.js verify       --ibge 2304103   (SOMENTE LEITURA: compara PNCP × banco e lista o que falta)
  *   node dist/ingest.js schedule     (laço: open + recent; INGEST_INTERVAL_MIN, INGEST_RECENT_DAYS, INGEST_UFS)
  *   node dist/ingest.js maintenance
  * `open`: propostas abertas, SEM corte (sem --modalities = todas as modalidades numa consulta só).
@@ -103,10 +105,31 @@ async function main() {
           }),
         );
         return;
+      case 'verify': {
+        const ibge = arg('ibge', '');
+        if (!/^d{7}$/.test(ibge)) {
+          console.error('informe --ibge com o código IBGE de 7 dígitos (ex.: 2304103 = Crateús)');
+          process.exit(2);
+        }
+        const r = await verifyMunicipality(db, ibge, { crossCheck: !flag('no-cross') });
+        console.log(
+          `município ${ibge}: PNCP tem ${r.pncp.length} propostas abertas · banco tem ${r.inDb} · faltam ${r.missing.length}` +
+            (r.crossCheckMatches === null
+              ? ''
+              : ` · consulta sem filtro ${r.crossCheckMatches ? 'bate' : 'NÃO bate'} com a soma das modalidades`),
+        );
+        for (const m of r.missing) {
+          console.log(`  FALTA ${m.numeroControlePncp} · ${m.modalityName} · ${m.object}`);
+        }
+        if (r.incomplete)
+          console.log('ATENÇÃO: alguma consulta ao PNCP falhou; o resultado não prova nada.');
+        if (r.missing.length > 0 || r.incomplete) process.exitCode = 1;
+        return;
+      }
       case 'municipality': {
         const ibge = arg('ibge', '');
         if (!/^\d{7}$/.test(ibge)) {
-          console.error('informe --ibge com o código IBGE de 7 dígitos (ex.: 2304202 = Crateús)');
+          console.error('informe --ibge com o código IBGE de 7 dígitos (ex.: 2304103 = Crateús)');
           process.exit(2);
         }
         report(

@@ -6,9 +6,12 @@
 #   API_URL       endereço da API no Render, https://..., sem barra no final
 #   CRON_SECRET   o mesmo valor configurado no Render (openssl rand -hex 24)
 #
-# Custo em minutos: cada rodada leva cerca de 10 a 15 min (limite de 12 chamadas/min ao PNCP).
-# 4 rodadas por dia ≈ 1.200 a 1.800 min/mês. Repositório público: ilimitado. Privado no plano Free do
-# GitHub: 2.000 min/mês (confira em Settings → Billing). Se apertar, troque o cron para a cada 8 ou 12 h.
+# Esta rodada traz TODAS as propostas abertas de CE e PI, sem corte de páginas (uma consulta por UF, todas as
+# modalidades): ≈ 35 chamadas ≈ 3 a 5 min (limite de 12 chamadas/min ao PNCP). O histórico (encerradas, suspensas,
+# canceladas) vem do workflow ingest-recent. Os dois dividem o mesmo grupo de concorrência: nunca rodam juntos.
+#
+# Custo em minutos: 4 rodadas por dia ≈ 600 min/mês. Repositório público: ilimitado. Privado no plano Free do
+# GitHub: 2.000 min/mês (confira em Settings → Billing); junto com o ingest-recent (≈ 300 min/mês) cabe.
 name: ingest
 
 on:
@@ -17,7 +20,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: ingest
+  group: pncp-ingest
   cancel-in-progress: false
 
 permissions:
@@ -26,7 +29,7 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -43,12 +46,15 @@ jobs:
       - name: Compilar o worker e os pacotes dele
         run: pnpm --filter "@agora/worker..." build
 
-      - name: Coletar propostas abertas de CE e PI
+      # Sem corte: `open` só para quando o PNCP acaba (teto de 80 páginas por consulta, bem acima do que existe).
+      # Se alguma janela ficar incompleta ou falhar, o passo termina com erro e o GitHub avisa por e-mail.
+      - name: Coletar TODAS as propostas abertas de CE e PI
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: node apps/worker/dist/ingest.js open --pages 8 --ufs CE,PI
+        run: node apps/worker/dist/ingest.js open --ufs CE,PI
 
       - name: Apagar payloads brutos antigos (o plano gratuito tem 1 GB)
+        if: always()
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "DELETE FROM ingest_raw WHERE fetched_at < now() - interval '3 days'"
