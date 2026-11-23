@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, newKey, problemText } from '@/lib/api';
 import { ufName } from '@/lib/coverage';
 import { fmtBRL, fmtDate, readable, readableName } from '@/lib/format';
+import { municipalityLabel, pncpPortalUrl } from '@/lib/municipalities';
 import { ReadPdfButton } from '../edital/ReadPdfButton';
 import s from './chat.module.css';
 
@@ -380,6 +381,30 @@ function RankedCard({ r, cite }: { r: AiRanked; cite: (url: string) => number | 
   );
 }
 
+/** O que a página do resultado diz do próprio edital (objeto, órgão, local, valor, prazo), quando deu para ler. */
+function WebDetails({ details }: { details: WebItem['details'] }) {
+  if (!details) return null;
+  const rows: [string, string | null][] = [
+    ['Objeto', details.object],
+    ['Órgão', details.organ],
+    ['Local', details.place],
+    ['Valor', details.value],
+    ['Prazo', details.deadline],
+  ];
+  const shown = rows.filter((r): r is [string, string] => Boolean(r[1]));
+  if (shown.length === 0) return null;
+  return (
+    <dl className={s.tech}>
+      {shown.map(([k, v]) => (
+        <div key={k} style={{ display: 'contents' }}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /**
  * Resultado achado na web, fora da nossa base. Mesma estrutura do cartão da base, mas sempre "não verificado" e sem
  * ação de funil (não há edital nosso por trás).
@@ -393,12 +418,25 @@ function WebCard({ o, href }: { o: WebItem; href: string }) {
           <div className={s.tags}>
             <span className={`rg-tag ${FIT_TAG[band]}`}>{FIT_LABEL[band]}</span>
             <span className="rg-tag rg-tag-accent">{VERDICT[o.verdict]}</span>
-            <span
-              className="rg-tag rg-tag-warning"
-              title="Este resultado não está na base da Régua e não foi conferido"
-            >
-              Não verificado
-            </span>
+            {o.verified ? (
+              <span
+                className="rg-tag rg-tag-success"
+                title="O Régua leu a página e conferiu os trechos citados abaixo"
+              >
+                Conferido na página
+              </span>
+            ) : (
+              <span
+                className="rg-tag rg-tag-warning"
+                title={
+                  o.extracted
+                    ? 'O Régua leu a página, mas nenhum trecho foi confirmado'
+                    : 'Este resultado não está na base da Régua e foi avaliado só pelo título e pelo trecho'
+                }
+              >
+                Não verificado
+              </span>
+            )}
           </div>
           <h3 className={s.cardTitle} style={{ marginTop: 'var(--space-2)' }}>
             <a href={href} target="_blank" rel="noopener noreferrer">
@@ -410,19 +448,45 @@ function WebCard({ o, href }: { o: WebItem; href: string }) {
         <span className="rg-src rg-src-web">Web</span>
       </div>
       {o.snippet ? <p className={s.snippet}>{o.snippet}</p> : null}
+      <WebDetails details={o.details ?? null} />
       <div className="rg-edital-figs">
         <div>
           <div className="rg-fig-label">Compatibilidade</div>
           <div
             className="rg-match"
-            title="Nota só pelo título e pelo trecho achados, calculada no servidor"
+            title={
+              o.extracted
+                ? 'Nota pelo conteúdo da página, calculada no servidor'
+                : 'Nota só pelo título e pelo trecho achados, calculada no servidor'
+            }
           >
             {o.score}%
           </div>
         </div>
       </div>
-      <Criteria criteria={o.criteria} unknownText="Não consta no trecho" />
-      <Bullets title="O que o trecho mostra" items={o.reasons} />
+      <Criteria
+        criteria={o.criteria}
+        unknownText={o.extracted ? 'Não consta na página' : 'Não consta no trecho'}
+      />
+      {o.criteria.some((c) => c.quote) ? (
+        <details>
+          <summary>Ver trechos da página</summary>
+          <ul className={s.webCriteria}>
+            {o.criteria
+              .filter((c) => c.quote)
+              .map((c) => (
+                <li key={c.name}>
+                  <strong>{c.name}</strong>
+                  <p className={s.webQuote}>“{c.quote}”</p>
+                </li>
+              ))}
+          </ul>
+        </details>
+      ) : null}
+      <Bullets
+        title={o.extracted ? 'O que a página mostra' : 'O que o trecho mostra'}
+        items={o.reasons}
+      />
       <Bullets title="Pontos de atenção" items={o.concerns} concern />
       <div className="rg-edital-actions">
         <a className="rg-btn rg-btn-primary" href={href} target="_blank" rel="noopener noreferrer">
@@ -494,10 +558,15 @@ export function ChatAnswer({
   onChangePrompt: () => void;
 }) {
   const { understood, results, meta } = data;
+  // Respostas antigas (salvas antes destes campos) não os trazem: valem como "nenhum".
+  const places = understood.municipality ?? [];
+  const live = understood.live_refresh ?? null;
+  const pncpQuery = places[0]?.name ?? understood.keywords.join(' ');
   const headRef = useRef<HTMLHeadingElement>(null);
   const web = useMemo(
     () =>
       (data.web_opportunities ?? [])
+        .filter((o) => o.is_edital !== false)
         .map((o) => ({ o, href: safeHttp(o.url) }))
         .filter((x): x is { o: WebItem; href: string } => x.href !== null),
     [data.web_opportunities],
@@ -613,13 +682,28 @@ export function ChatAnswer({
 
       <div className="rg-filters">
         <span>Filtros aplicados:</span>
-        {understood.filters.length === 0 ? <span>nenhum</span> : null}
+        {understood.filters.length === 0 && places.length === 0 ? <span>nenhum</span> : null}
+        {places.map((m) => (
+          <span className={s.placeChip} key={m.ibge}>
+            Município: {municipalityLabel(m)}
+          </span>
+        ))}
         {understood.filters.map((f) => (
           <span className="rg-filter" key={f}>
             {f}
           </span>
         ))}
       </div>
+      {live && !live.complete ? (
+        <p className={s.liveNote} role="status">
+          A atualização ao vivo do PNCP não terminou; pode haver editais a mais.
+        </p>
+      ) : live && live.upserted > 0 ? (
+        <p className={s.liveNote} role="status">
+          Atualizei o PNCP agora para esse município: {live.upserted}{' '}
+          {live.upserted === 1 ? 'edital novo' : 'editais novos'}.
+        </p>
+      ) : null}
       <p className={s.kw}>
         Entendi assim: {understood.summary}
         {understood.keywords.length > 0 ? ` Palavras: ${understood.keywords.join(', ')}.` : ''}
@@ -706,9 +790,19 @@ export function ChatAnswer({
                   palavras. A base ainda é parcial, então um edital que existe no PNCP pode não
                   estar aqui.
                 </p>
-                <button type="button" className="rg-btn" onClick={onChangePrompt}>
-                  Mudar o pedido
-                </button>
+                <div className={s.emptyActions}>
+                  <button type="button" className="rg-btn" onClick={onChangePrompt}>
+                    Mudar o pedido
+                  </button>
+                  <a
+                    className="rg-btn"
+                    href={pncpPortalUrl(pncpQuery)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Conferir no PNCP
+                  </a>
+                </div>
               </div>
             </div>
           ) : baseFiltered.length === 0 ? (

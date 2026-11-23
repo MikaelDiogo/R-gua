@@ -11,6 +11,12 @@ import { useSearchHistory } from '@/lib/history';
 import { PAGE_SIZES, readFilters } from '@/lib/intent';
 import { modalityLabel } from '@/lib/modalities';
 import { monitorHrefFromSearch } from '@/lib/monitors';
+import {
+  municipalityLabel,
+  pncpPortalUrl,
+  stripPlaceFromText,
+  useMunicipalityLabels,
+} from '@/lib/municipalities';
 import { FacetList } from './FacetList';
 import { Icon } from './Icon';
 import { Pagination, RangeText } from './Pagination';
@@ -19,6 +25,7 @@ import { SearchBox } from './SearchBox';
 import {
   DeadlineFilterControl,
   deadlineSummary,
+  MunicipalityFilter,
   OrganFilter,
   useOrganNames,
   ValueFilter,
@@ -70,6 +77,7 @@ export function SearchView({
     uf,
     modality,
     orgs,
+    municipality,
     valueMin,
     valueMax,
     deadline,
@@ -140,6 +148,10 @@ export function SearchView({
 
   const items = data?.items ?? [];
   const meta = data?.meta ?? null;
+  const applied = meta?.applied?.municipalities ?? [];
+  const placeLabels = useMunicipalityLabels(municipality, applied);
+  // Municípios que o servidor achou no TEXTO digitado (os escolhidos no filtro já têm chip próprio).
+  const fromText = applied.filter((m) => !municipality.includes(m.ibge));
   const total = meta?.total_estimate ?? 0;
   const approx = meta ? !meta.total_exact : false;
   const pageSize = data?.page_size ?? filters.perPage;
@@ -163,6 +175,7 @@ export function SearchView({
   const hasFilters =
     advanced +
       orgs.length +
+      municipality.length +
       (valueMin !== null || valueMax !== null ? 1 : 0) +
       (deadline ? 1 : 0) +
       (urlQ.trim() ? 1 : 0) >
@@ -197,7 +210,12 @@ export function SearchView({
         : 'A busca não respondeu por completo.';
 
   const activeCount =
-    orgs.length + (valueMin !== null || valueMax !== null ? 1 : 0) + (deadline ? 1 : 0) + advanced;
+    orgs.length +
+    municipality.length +
+    fromText.length +
+    (valueMin !== null || valueMax !== null ? 1 : 0) +
+    (deadline ? 1 : 0) +
+    advanced;
 
   return (
     <>
@@ -255,6 +273,11 @@ export function SearchView({
           </div>
           <div className={s.railBody} id="rail-body">
             <OrganFilter selected={orgs} names={orgNames} onChange={(c) => update({ orgao: c })} />
+            <MunicipalityFilter
+              selected={municipality}
+              labels={placeLabels}
+              onChange={(codes) => update({ municipio: codes })}
+            />
             <ValueFilter
               min={valueMin}
               max={valueMax}
@@ -358,6 +381,41 @@ export function SearchView({
                 </span>
               );
             })}
+            {municipality.map((code) => {
+              const label = placeLabels[code] ?? code;
+              return (
+                <span className={s.chip} key={`mun-${code}`}>
+                  Município: {label}
+                  <button
+                    type="button"
+                    onClick={() => update({ municipio: toggle(municipality, code) })}
+                    aria-label={`Remover município ${label}`}
+                  >
+                    <Icon name="x" size={12} />
+                  </button>
+                </span>
+              );
+            })}
+            {fromText.map((m) => (
+              <span
+                className={s.chip}
+                key={`txt-${m.ibge}`}
+                title="O Régua entendeu o nome do município no texto e limitou a busca a ele"
+              >
+                Município: {municipalityLabel(m)}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const rest = stripPlaceFromText(urlQ, m.name);
+                    setText(rest);
+                    update({ q: rest || null });
+                  }}
+                  aria-label={`Remover município ${municipalityLabel(m)} da busca`}
+                >
+                  <Icon name="x" size={12} />
+                </button>
+              </span>
+            ))}
             {valueMin !== null || valueMax !== null ? (
               <span className={s.chip}>
                 Valor: {valueSummary(valueMin, valueMax)}
@@ -431,9 +489,19 @@ export function SearchView({
                     Tente menos filtros ou outras palavras. A busca respondeu normalmente: não há
                     editais coletados com esses critérios.
                   </p>
-                  <button type="button" className="rg-btn" onClick={clearAll}>
-                    Limpar filtros
-                  </button>
+                  <div className={s.emptyActions}>
+                    <button type="button" className="rg-btn" onClick={clearAll}>
+                      Limpar filtros
+                    </button>
+                    <a
+                      className="rg-btn"
+                      href={pncpPortalUrl(applied[0]?.name ?? meta?.applied?.text ?? urlQ)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Conferir no PNCP
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : (

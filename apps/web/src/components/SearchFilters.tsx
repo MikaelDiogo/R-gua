@@ -1,9 +1,11 @@
 'use client';
 
+import type { MunicipalitiesResponse } from '@agora/contracts';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { DEADLINE_OPTIONS, type DeadlineFilter, VALUE_PRESETS } from '@/lib/filters';
 import { fmtBRL } from '@/lib/format';
+import { type Municipality, rememberMunicipalities } from '@/lib/municipalities';
 import { Popover } from './Popover';
 import s from './search.module.css';
 
@@ -169,6 +171,116 @@ export function OrganFilter({
           {selected.length ? (
             <button type="button" className={s.linkBtn} onClick={() => onChange([])}>
               Limpar órgãos
+            </button>
+          ) : null}
+        </div>
+      )}
+    </Popover>
+  );
+}
+
+/** Município (só CE e PI): autocomplete na API (GET /v1/municipalities?q=). A URL guarda o código IBGE. */
+export function MunicipalityFilter({
+  selected,
+  labels,
+  onChange,
+}: {
+  selected: string[];
+  labels: Record<string, string>;
+  onChange: (codes: string[]) => void;
+}) {
+  const [text, setText] = useState('');
+  const [found, setFound] = useState<Municipality[]>([]);
+  const [failed, setFailed] = useState(false);
+  const q = text.trim();
+
+  useEffect(() => {
+    if (q.length < 2) {
+      setFound([]);
+      setFailed(false);
+      return;
+    }
+    let alive = true;
+    const t = window.setTimeout(async () => {
+      const r = await api<MunicipalitiesResponse>(
+        `/municipalities?q=${encodeURIComponent(q)}&limit=12`,
+      );
+      if (!alive) return;
+      setFailed(!r.ok);
+      if (r.ok) {
+        rememberMunicipalities(r.data.items);
+        setFound(r.data.items);
+      } else setFound([]);
+    }, 250);
+    return () => {
+      alive = false;
+      window.clearTimeout(t);
+    };
+  }, [q]);
+
+  const summary =
+    selected.length === 0
+      ? ''
+      : selected.length === 1
+        ? (labels[selected[0] ?? ''] ?? '')
+        : `${selected.length} selecionados`;
+  const toggle = (m: Municipality) => {
+    rememberMunicipalities([m]);
+    onChange(
+      selected.includes(m.ibge) ? selected.filter((x) => x !== m.ibge) : [...selected, m.ibge],
+    );
+  };
+  const chosen: Municipality[] = selected.map((code) => {
+    const label = labels[code] ?? code;
+    const name = label.replace(/\s*\([A-Z]{2}\)$/, '');
+    const uf = /\(([A-Z]{2})\)$/.exec(label)?.[1] ?? 'CE';
+    return { ibge: code, name, uf: uf as Municipality['uf'] };
+  });
+  const shown = q.length >= 2 ? found : chosen;
+
+  return (
+    <Popover inline label="Município" summary={summary} active={selected.length > 0}>
+      {() => (
+        <div className={s.popBody}>
+          <label htmlFor="mun-q" className={s.popLabel}>
+            Buscar município
+          </label>
+          <input
+            id="mun-q"
+            className={s.popInput}
+            type="search"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Ex.: Crateús"
+            autoComplete="off"
+          />
+          {failed ? (
+            <p className={s.popNote}>Não foi possível buscar municípios agora.</p>
+          ) : q.length < 2 && selected.length === 0 ? (
+            <p className={s.popNote}>Digite pelo menos 2 letras. Só Ceará e Piauí.</p>
+          ) : shown.length === 0 ? (
+            <p className={s.popNote}>Nenhum município com esse nome em CE ou PI.</p>
+          ) : (
+            <ul className={s.popList}>
+              {shown.map((m) => (
+                <li key={m.ibge}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(m.ibge)}
+                      onChange={() => toggle(m)}
+                    />
+                    <span className={s.popItemText}>
+                      {m.name} <span className={s.popMuted}>· {m.uf}</span>
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
+          {selected.length ? (
+            <button type="button" className={s.linkBtn} onClick={() => onChange([])}>
+              Limpar municípios
             </button>
           ) : null}
         </div>

@@ -8,6 +8,7 @@ import { notifyConversations } from '@/lib/conversations';
 import { fmtDateTime } from '@/lib/format';
 import { ChatAnswer } from './ChatAnswer';
 import s from './chat.module.css';
+import { HelpAnswer } from './HelpAnswer';
 
 const MAX_LEN = 600;
 const MIN_LEN = 3;
@@ -50,7 +51,7 @@ function turnsFromMessages(messages: ConversationMessage[]): Turn[] {
   let n = 0;
   for (let i = 0; i < messages.length; i++) {
     const m = messages[i];
-    if (!m || m.role !== 'user') continue;
+    if (m?.role !== 'user') continue;
     const next = messages[i + 1];
     const base = {
       id: ++n,
@@ -145,9 +146,9 @@ function Working({ modes, startedAt }: { modes: Modes; startedAt: number }) {
   }, [startedAt]);
   const steps = [
     'Entendendo o pedido',
-    ...(modes.pncp ? ['Buscando no PNCP'] : []),
+    ...(modes.pncp ? ['Atualizando o PNCP'] : []),
     ...(modes.web ? ['Buscando na web'] : []),
-    'Avaliando',
+    'Lendo os editais',
   ];
   const now = currentStep(seconds, steps.length);
   return (
@@ -231,7 +232,8 @@ export function Chat({
   const loading = turns.some((t) => t.status === 'loading');
   const noMode = !modes.pncp && !modes.web;
   const trimmed = text.trim();
-  const canSend = !loading && !noMode && trimmed.length >= MIN_LEN;
+  // Dúvida sobre o Régua responde sem fonte ligada; só a BUSCA exige PNCP ou Web (o servidor decide e avisa).
+  const canSend = !loading && trimmed.length >= MIN_LEN;
 
   function patch(id: number, next: Partial<Turn> & { status: Turn['status'] }) {
     setTurns((all) => all.map((t) => (t.id === id ? ({ ...t, ...next } as Turn) : t)));
@@ -340,7 +342,7 @@ export function Chat({
           rows={2}
           value={text}
           maxLength={MAX_LEN}
-          placeholder="Pergunte sobre editais, prazos, preços ou lei"
+          placeholder="Pergunte sobre editais ou sobre como usar o Régua"
           aria-describedby="chat-note"
           onChange={(e) => {
             setText(e.target.value);
@@ -415,7 +417,7 @@ export function Chat({
       <p id="chat-note" className={s.dockNote} data-alert={hint || noMode ? '' : undefined}>
         {hint ??
           (noMode
-            ? 'Sem busca ligada, a Régua não tem em que pesquisar. Ligue PNCP, Web ou os dois.'
+            ? 'Sem PNCP nem Web ligados eu só respondo dúvidas sobre o Régua. Para buscar editais, ligue PNCP, Web ou os dois.'
             : 'Enter envia, Shift+Enter quebra a linha. A resposta pode estar desatualizada: confira no edital.')}
       </p>
     </>
@@ -496,32 +498,55 @@ export function Chat({
                           <summary className={s.savedLast}>
                             Último resultado salvo, de {fmtDateTime(saved.at)}: “{saved.prompt}”
                           </summary>
-                          <ChatAnswer
-                            data={saved.data}
-                            pncp
-                            web
-                            onChangePrompt={() => areaRef.current?.focus()}
-                          />
+                          {saved.data.kind === 'help' && saved.data.help ? (
+                            <HelpAnswer
+                              answer={saved.data.help.answer}
+                              suggestions={saved.data.help.suggestions}
+                              onAsk={(q) => void run(q)}
+                              disabled={loading}
+                            />
+                          ) : (
+                            <ChatAnswer
+                              data={saved.data}
+                              pncp
+                              web
+                              onChangePrompt={() => areaRef.current?.focus()}
+                            />
+                          )}
                         </details>
                       ) : null}
                     </div>
                   ) : null}
                   {t.status === 'done' ? (
-                    <>
-                      <p className={s.sr} role="status" aria-live="polite">
-                        Avaliação pronta: {t.data.results.length}{' '}
-                        {t.data.results.length === 1 ? 'edital' : 'editais'}.
-                      </p>
-                      <ChatAnswer
-                        data={t.data}
-                        pncp={t.modes.pncp}
-                        web={t.modes.web}
-                        onChangePrompt={() => {
-                          areaRef.current?.focus();
-                          areaRef.current?.scrollIntoView({ block: 'center' });
-                        }}
-                      />
-                    </>
+                    t.data.kind === 'help' && t.data.help ? (
+                      <>
+                        <p className={s.sr} role="status" aria-live="polite">
+                          Resposta pronta.
+                        </p>
+                        <HelpAnswer
+                          answer={t.data.help.answer}
+                          suggestions={t.data.help.suggestions}
+                          onAsk={(q) => void run(q)}
+                          disabled={loading}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <p className={s.sr} role="status" aria-live="polite">
+                          Avaliação pronta: {t.data.results.length}{' '}
+                          {t.data.results.length === 1 ? 'edital' : 'editais'}.
+                        </p>
+                        <ChatAnswer
+                          data={t.data}
+                          pncp={t.modes.pncp}
+                          web={t.modes.web}
+                          onChangePrompt={() => {
+                            areaRef.current?.focus();
+                            areaRef.current?.scrollIntoView({ block: 'center' });
+                          }}
+                        />
+                      </>
+                    )
                   ) : null}
                 </div>
               ))}

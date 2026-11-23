@@ -945,3 +945,10 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Ações do estado vazio (limpar filtros, conferir no PNCP). */
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

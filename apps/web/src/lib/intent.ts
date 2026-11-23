@@ -18,6 +18,8 @@ export interface UrlFilters {
   uf: string[];
   modality: string[];
   orgs: string[];
+  /** Códigos IBGE dos municípios escolhidos (CE e PI). */
+  municipality: string[];
   valueMin: number | null;
   valueMax: number | null;
   deadline: DeadlineFilter;
@@ -39,6 +41,7 @@ export function readFilters(sp: Params): UrlFilters {
     uf: all(sp.uf),
     modality: all(sp.modalidade),
     orgs: all(sp.orgao),
+    municipality: all(sp.municipio).filter((c) => /^d{7}$/.test(c)),
     valueMin: num(one(sp.valor_min)),
     valueMax: num(one(sp.valor_max)),
     deadline: DEADLINES.includes(rawDeadline) ? rawDeadline : '',
@@ -87,6 +90,7 @@ export function toIntent(f: UrlFilters, now: Date = new Date()): SearchIntentInp
       ...(f.uf.length ? { uf: f.uf as never } : {}),
       ...(modality.length ? { modality } : {}),
       ...(f.orgs.length ? { organ_cnpj: f.orgs } : {}),
+      ...(f.municipality.length ? { municipality_ibge: f.municipality } : {}),
       ...(f.valueMin !== null || f.valueMax !== null
         ? {
             value: {

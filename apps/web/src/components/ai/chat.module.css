@@ -424,3 +424,66 @@
 .link:hover {
   color: var(--accent-active);
 }
+
+/* Resposta de AJUDA (kind = help): texto e listas simples, sem cartões. */
+.help {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--chat-column);
+}
+.help p {
+  margin: 0;
+  color: var(--body);
+  line-height: 1.55;
+}
+.helpList {
+  margin: 0;
+  padding-left: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--body);
+  line-height: 1.5;
+}
+
+/* Linha de filtros do chat: município aplicado e avisos da atualização ao vivo. */
+.placeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-xs);
+  padding: 1px var(--space-2);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+.liveNote {
+  margin: 0 0 var(--space-3);
+  font-size: 13px;
+  color: var(--muted);
+}
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.webQuote {
+  margin: var(--space-2) 0 0;
+  padding: 0 0 0 var(--space-3);
+  border-left: 2px solid var(--hairline);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+.webCriteria {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
