@@ -30,12 +30,15 @@ import { PricingService } from './pricing/pricing.service';
 import { ProfileService } from './proposals/profile.service';
 import { ProposalsController } from './proposals/proposals.controller';
 import { ProposalsService } from './proposals/proposals.service';
+import { RadarController } from './radar/radar.controller';
+import { RadarService } from './radar/radar.service';
 import { SearchController } from './search/search.controller';
 import { SearchService } from './search/search.service';
 
 @Module({
   imports: [DbModule],
   controllers: [
+    RadarController,
     LegalController,
     MonitorsController,
     AuthController,
@@ -51,6 +54,7 @@ import { SearchService } from './search/search.service';
     ProposalsController,
   ],
   providers: [
+    RadarService,
     LegalService,
     ConversationsService,
     MonitorsService,
