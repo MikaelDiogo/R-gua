@@ -20,18 +20,19 @@ BEGIN
     CREATE ROLE agora_migrator LOGIN PASSWORD 'TROCAR_SENHA_MIGRATOR';
   END IF;
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'agora_app') THEN
-    CREATE ROLE agora_app LOGIN PASSWORD 'TROCAR_SENHA_APP' NOSUPERUSER NOBYPASSRLS;
+    CREATE ROLE agora_app LOGIN PASSWORD 'TROCAR_SENHA_APP';
   END IF;
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'agora_worker_maint') THEN
-    CREATE ROLE agora_worker_maint LOGIN PASSWORD 'TROCAR_SENHA_MAINT' NOSUPERUSER NOBYPASSRLS;
+    CREATE ROLE agora_worker_maint LOGIN PASSWORD 'TROCAR_SENHA_MAINT';
   END IF;
 END
 $$;
 
--- Reaplica as senhas e garante os atributos mesmo se os papéis já existiam.
+-- Reaplica as senhas. Papel novo já nasce NOSUPERUSER e NOBYPASSRLS (padrão do Postgres); a Neon não deixa
+-- o dono do banco mexer nesses atributos, então eles não são citados aqui. A conferência no fim prova que valem.
 ALTER ROLE agora_migrator PASSWORD 'TROCAR_SENHA_MIGRATOR';
-ALTER ROLE agora_app PASSWORD 'TROCAR_SENHA_APP' NOSUPERUSER NOBYPASSRLS;
-ALTER ROLE agora_worker_maint PASSWORD 'TROCAR_SENHA_MAINT' NOSUPERUSER NOBYPASSRLS;
+ALTER ROLE agora_app PASSWORD 'TROCAR_SENHA_APP';
+ALTER ROLE agora_worker_maint PASSWORD 'TROCAR_SENHA_MAINT';
 
 -- ── Acesso ao banco e ao schema ─────────────────────────────────────────────
 -- O nome do banco na Neon é `neondb` por padrão; current_database() serve para qualquer nome.
