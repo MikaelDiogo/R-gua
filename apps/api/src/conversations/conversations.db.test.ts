@@ -31,7 +31,7 @@ const result = (): AiSearchResult =>
     },
     disclaimer: '',
     server_now: new Date().toISOString(),
-  }) as AiSearchResult;
+  }) as unknown as AiSearchResult;
 
 describe.skipIf(!URL)('conversas no Postgres real', () => {
   let db: Db;

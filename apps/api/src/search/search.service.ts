@@ -1,5 +1,6 @@
 import {
   ALLOWED_UFS,
+  type MunicipalitiesResponse,
   type OrganSuggestResponse,
   type ProcurementDetail,
   type SearchIntent,
@@ -7,6 +8,7 @@ import {
   type SuggestResponse,
 } from '@agora/contracts';
 import { type Db } from '@agora/db';
+import { extractPlace, MUNICIPALITIES, searchMunicipalities } from '@agora/domain';
 import { Injectable } from '@nestjs/common';
 import { CLOCK, type Clock, DB, InjectClock, InjectDb } from '../platform/db.module';
 import { DomainError } from '../platform/problem.filter';
@@ -104,7 +106,8 @@ export class SearchService {
   private orderBy(intent: SearchIntent, qParam: number | null): string {
     switch (intent.sort) {
       case 'deadline_asc':
-        return 'p.proposals_close_at ASC NULLS LAST, p.id';
+        // Em aberto primeiro (as que encerram antes no topo); depois as já encerradas, da mais recente para a mais antiga.
+        return `(p.proposals_close_at IS NOT NULL AND p.proposals_close_at > now()) DESC, CASE WHEN p.proposals_close_at > now() THEN p.proposals_close_at END ASC NULLS LAST, p.proposals_close_at DESC NULLS LAST, p.id`;
       case 'published_desc':
         return 'p.published_at DESC NULLS LAST, p.id';
       case 'value_desc':
@@ -116,7 +119,59 @@ export class SearchService {
     }
   }
 
-  async search(intent: SearchIntent): Promise<SearchResponse> {
+  /**
+   * Lugar do pedido, lido pelo servidor (sem IA): "Licitações em Crateús" vira filtro de município e o texto que
+   * sobra (nada, neste caso) é o que a busca exige no objeto. Filtro de município já informado vale como veio.
+   */
+  private applyPlace(intent: SearchIntent): {
+    intent: SearchIntent;
+    applied: NonNullable<SearchResponse['meta']['applied']>;
+  } {
+    const toApplied = (ibges: string[]) =>
+      MUNICIPALITIES.filter((m) => ibges.includes(m.ibge)).map((m) => ({
+        name: m.name,
+        ibge: m.ibge,
+        uf: m.uf,
+      }));
+    const already = intent.filters.municipality_ibge;
+    if (already?.length) {
+      return {
+        intent,
+        applied: { municipalities: toApplied(already), text: intent.q?.trim() || null },
+      };
+    }
+    const q = intent.q?.trim();
+    if (q) {
+      const place = extractPlace(q);
+      if (place.municipalities.length > 0) {
+        const ibges = place.municipalities.map((m) => m.ibge);
+        return {
+          intent: {
+            ...intent,
+            q: place.rest || undefined,
+            filters: { ...intent.filters, municipality_ibge: ibges },
+          },
+          applied: { municipalities: toApplied(ibges), text: place.rest || null },
+        };
+      }
+    }
+    return { intent, applied: { municipalities: [], text: q || null } };
+  }
+
+  /** Autocomplete de município (só CE e PI). */
+  municipalities(qRaw: string | undefined, limit: number): MunicipalitiesResponse {
+    return {
+      items: searchMunicipalities((qRaw ?? '').trim().slice(0, 80), limit).map((m) => ({
+        name: m.name,
+        ibge: m.ibge,
+        uf: m.uf,
+      })),
+      server_now: this.clock().toISOString(),
+    };
+  }
+
+  async search(intentIn: SearchIntent): Promise<SearchResponse> {
+    const { intent, applied } = this.applyPlace(intentIn);
     const t0 = Date.now();
     const now = this.clock();
     const q = intent.q?.trim() || undefined;
@@ -175,6 +230,7 @@ export class SearchService {
         degraded: [],
         index_freshness_at: (freshness ?? now).toISOString(),
         took_ms: Date.now() - t0,
+        applied,
       },
       server_now: now.toISOString(),
     };

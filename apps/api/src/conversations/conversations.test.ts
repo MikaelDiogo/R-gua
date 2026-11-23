@@ -38,7 +38,7 @@ const result = (): AiSearchResult =>
     },
     disclaimer: '',
     server_now: new Date().toISOString(),
-  }) as AiSearchResult;
+  }) as unknown as AiSearchResult;
 
 /** Banco que explode se alguém o usar: prova que o id malformado nem chega a consultar. */
 const deadDb = () => {

@@ -8,8 +8,48 @@ export interface WebSource {
 export interface TavilyOptions {
   apiKey: string | undefined;
   timeoutMs?: number;
+  /** Teto da extração de conteúdo das páginas (padrão 15 s). */
+  extractTimeoutMs?: number;
   fetch?: typeof fetch;
 }
+
+/** Portais de compras públicas aceitos na busca e na extração. Qualquer outro endereço é recusado. */
+export const PORTAL_DOMAINS = [
+  'pncp.gov.br',
+  'gov.br',
+  'bll.org.br',
+  'licitanet.com.br',
+  'compraspublicas.com.br',
+  'bnc.org.br',
+  'portaldecompraspublicas.com.br',
+  'licitacoes-e.com.br',
+];
+
+/** Só https, sem usuário e senha na URL, e só em portal da lista (ou subdomínio dele). */
+export function isAllowedWebUrl(raw: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== 'https:' || u.username || u.password) return false;
+  const h = u.hostname.toLowerCase();
+  return PORTAL_DOMAINS.some((d) => h === d || h.endsWith(`.${d}`));
+}
+
+const sameUrl = (a: string, b: string) => {
+  const n = (x: string) => {
+    try {
+      const u = new URL(x);
+      u.hash = '';
+      return u.toString().replace(/\/$/, '');
+    } catch {
+      return x;
+    }
+  };
+  return n(a) === n(b);
+};
 
 /**
  * Pesquisa na web (Tavily). Os links e trechos vêm do buscador, nunca de um modelo, então não podem ser inventados.
@@ -73,6 +113,50 @@ export class TavilySearch {
           host: u.host,
           snippet: (r.content ?? '').replace(/\s+/g, ' ').slice(0, snippetMax),
         });
+      }
+      return out;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
+   * Lê o conteúdo das páginas (HTML ou PDF já convertido em texto pelo Tavily). Só URLs de portais permitidos, no
+   * máximo 5. Devolve só o que foi pedido: URL que o Tavily acrescentar por conta própria é ignorada. `null` = a
+   * chamada falhou (quem chama cai para o trecho do buscador); mapa vazio = nada legível.
+   */
+  async extract(urls: string[], maxCharsPerUrl = 12_000): Promise<Map<string, string> | null> {
+    if (!this.opts.apiKey) return null;
+    const wanted = [...new Set(urls.filter(isAllowedWebUrl))].slice(0, 5);
+    if (wanted.length === 0) return new Map();
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), this.opts.extractTimeoutMs ?? 15_000);
+    try {
+      const res = await this.doFetch('https://api.tavily.com/extract', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${this.opts.apiKey}`,
+        },
+        body: JSON.stringify({ urls: wanted, extract_depth: 'basic', include_images: false }),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) return null;
+      const body = (await res.json()) as {
+        results?: Array<{ url?: string; raw_content?: string }>;
+      };
+      const out = new Map<string, string>();
+      for (const r of body.results ?? []) {
+        const key = wanted.find((w) => sameUrl(w, r.url ?? ''));
+        if (!key) continue;
+        const text = (r.raw_content ?? '')
+          .replace(/\r/g, '')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        if (text.length >= 80) out.set(key, text.slice(0, maxCharsPerUrl));
       }
       return out;
     } catch {

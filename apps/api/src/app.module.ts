@@ -6,6 +6,7 @@ import { AiController } from './ai/ai.controller';
 import { AiSearchService, GEMINI, TAVILY } from './ai/ai-search.service';
 import { AnalysisService } from './ai/analysis.service';
 import { GeminiGateway } from './ai/gemini';
+import { HELP_LLM, HelpService } from './ai/help.service';
 import { TavilySearch } from './ai/tavily';
 import { AuthController } from './auth/auth.controller';
 import { AuthGuard } from './auth/auth.guard';
@@ -59,6 +60,8 @@ import { SearchService } from './search/search.service';
     SearchService,
     PipelineService,
     AiSearchService,
+    HelpService,
+    { provide: HELP_LLM, useExisting: GEMINI },
     AnalysisService,
     CollectService,
     DocumentFileService,

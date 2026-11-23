@@ -1,4 +1,4 @@
-import { SearchIntent } from '@agora/contracts';
+import { MunicipalitiesQuery, SearchIntent } from '@agora/contracts';
 import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { CollectService } from '../documents/collect.service';
 import { SearchService } from './search.service';
@@ -20,6 +20,13 @@ export class SearchController {
   @Get('search/suggest')
   suggest(@Query('q') q = '') {
     return this.search.suggest(q);
+  }
+
+  /** Autocomplete dos municípios de CE e PI (o filtro "Município" do Buscador). */
+  @Get('municipalities')
+  municipalities(@Query() query: unknown) {
+    const q = MunicipalitiesQuery.parse(query ?? {});
+    return this.search.municipalities(q.q, q.limit);
   }
 
   @Get('organs')
