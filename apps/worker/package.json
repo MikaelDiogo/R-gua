@@ -1,0 +1,24 @@
+{
+  "name": "@agora/worker",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/main.js",
+    "test": "vitest run --passWithNoTests",
+    "ingest": "node dist/ingest.js",
+    "collect-items": "node dist/items.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@agora/db": "workspace:*",
+    "@agora/ingestion": "workspace:*"
+  }
+}

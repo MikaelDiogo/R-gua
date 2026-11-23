@@ -1,0 +1,7 @@
+{
+  "message": "Tamanho de página inválido",
+  "path": "/pncp-consulta/v1/contratacoes/publicacao",
+  "timestamp": "2026-11-03T10:19:00.288-03:00",
+  "status": "400",
+  "error": "Bad Request"
+}

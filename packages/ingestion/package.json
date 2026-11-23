@@ -1,0 +1,22 @@
+{
+  "name": "@agora/ingestion",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run",
+    "test:live": "PNCP_LIVE=1 vitest run src/pncp/live.test.ts"
+  },
+  "dependencies": {
+    "@agora/contracts": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "path": "/pncp-consulta/v1/contratacoes/publicacao",
+  "message": "Data Inicial inválida, deve estar no formato yyyyMMdd.",
+  "error": "422 UNPROCESSABLE_ENTITY",
+  "timestamp": "2026-11-03T10:19:36.843-03:00",
+  "status": "422"
+}

@@ -1,0 +1,321 @@
+{
+  "version": "seed-0",
+  "createdAt": "2026-11-03",
+  "note": "Consultas plausíveis SEM julgamento. Falta julgar (0 a 3) com especialistas de licitações; meta da Fase 0: >= 150 consultas julgadas (docs/13).",
+  "queries": [
+    {
+      "id": "q001",
+      "q": "notebook",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q002",
+      "q": "merenda escolar",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q003",
+      "q": "medicamentos",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q004",
+      "q": "combustível",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q005",
+      "q": "pneus",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q006",
+      "q": "uniformes",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q007",
+      "q": "ar condicionado",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q008",
+      "q": "software de gestão",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q009",
+      "q": "limpeza",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q010",
+      "q": "vigilância",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q011",
+      "q": "obras de pavimentação",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q012",
+      "q": "ambulância",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q013",
+      "q": "material de escritório",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q014",
+      "q": "gêneros alimentícios",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q015",
+      "q": "manutenção de veículos",
+      "kind": "short_term",
+      "judgments": {}
+    },
+    {
+      "id": "q016",
+      "q": "aquisição de microcomputadores portáteis para uso administrativo",
+      "kind": "long_description",
+      "judgments": {}
+    },
+    {
+      "id": "q017",
+      "q": "contratação de empresa especializada em serviços de limpeza e conservação predial",
+      "kind": "long_description",
+      "judgments": {}
+    },
+    {
+      "id": "q018",
+      "q": "registro de preços para fornecimento de medicamentos da atenção básica",
+      "kind": "long_description",
+      "judgments": {}
+    },
+    {
+      "id": "q019",
+      "q": "prestação de serviços de manutenção preventiva e corretiva de ar condicionado",
+      "kind": "long_description",
+      "judgments": {}
+    },
+    {
+      "id": "q020",
+      "q": "fornecimento de gêneros alimentícios perecíveis para a merenda escolar",
+      "kind": "long_description",
+      "judgments": {}
+    },
+    {
+      "id": "q021",
+      "q": "TI",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q022",
+      "q": "SRP",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q023",
+      "q": "RP pregão eletrônico",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q024",
+      "q": "EPP ME",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q025",
+      "q": "TR",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q026",
+      "q": "ARP",
+      "kind": "acronym",
+      "judgments": {},
+      "notes": "sigla do domínio; dicionário de sinônimos"
+    },
+    {
+      "id": "q027",
+      "q": "pregão 045/2024",
+      "kind": "process_number",
+      "judgments": {}
+    },
+    {
+      "id": "q028",
+      "q": "edital 12/2026",
+      "kind": "process_number",
+      "judgments": {}
+    },
+    {
+      "id": "q029",
+      "q": "processo 87/2023",
+      "kind": "process_number",
+      "judgments": {}
+    },
+    {
+      "id": "q030",
+      "q": "dispensa 150/2026",
+      "kind": "process_number",
+      "judgments": {}
+    },
+    {
+      "id": "q031",
+      "q": "CATMAT 150487",
+      "kind": "catmat",
+      "judgments": {}
+    },
+    {
+      "id": "q032",
+      "q": "CATSER 25674",
+      "kind": "catmat",
+      "judgments": {}
+    },
+    {
+      "id": "q033",
+      "q": "catmat 445732",
+      "kind": "catmat",
+      "judgments": {}
+    },
+    {
+      "id": "q034",
+      "q": "pregões de TI no Ceará acima de 200 mil abrindo esta semana",
+      "kind": "natural_language",
+      "judgments": {},
+      "expectedFilters": {
+        "uf": ["CE"],
+        "modality": [6],
+        "value": {
+          "min": 200000
+        },
+        "proposals_deadline": "esta_semana"
+      }
+    },
+    {
+      "id": "q035",
+      "q": "compra de medicamentos em Minas com propostas abertas",
+      "kind": "natural_language",
+      "judgments": {},
+      "expectedFilters": {
+        "uf": ["MG"],
+        "status": ["open_for_proposals"]
+      }
+    },
+    {
+      "id": "q036",
+      "q": "obras de escola em municípios do Piauí",
+      "kind": "natural_language",
+      "judgments": {},
+      "expectedFilters": {
+        "uf": ["PI"],
+        "sphere": ["municipal"]
+      }
+    },
+    {
+      "id": "q037",
+      "q": "dispensas de licitação de material de limpeza até 50 mil",
+      "kind": "natural_language",
+      "judgments": {},
+      "expectedFilters": {
+        "modality": [8],
+        "value": {
+          "max": 50000
+        }
+      }
+    },
+    {
+      "id": "q038",
+      "q": "concorrências eletrônicas federais de engenharia",
+      "kind": "natural_language",
+      "judgments": {},
+      "expectedFilters": {
+        "modality": [4],
+        "sphere": ["federal"]
+      }
+    },
+    {
+      "id": "q039",
+      "q": "notbook",
+      "kind": "typo",
+      "judgments": {}
+    },
+    {
+      "id": "q040",
+      "q": "medicamnetos",
+      "kind": "typo",
+      "judgments": {}
+    },
+    {
+      "id": "q041",
+      "q": "merenda escolr",
+      "kind": "typo",
+      "judgments": {}
+    },
+    {
+      "id": "q042",
+      "q": "combustivel gasolina comun",
+      "kind": "typo",
+      "judgments": {}
+    },
+    {
+      "id": "q043",
+      "q": "computadores",
+      "kind": "with_filters",
+      "judgments": {},
+      "expectedFilters": {
+        "uf": ["SP"],
+        "modality": [6]
+      }
+    },
+    {
+      "id": "q044",
+      "q": "limpeza",
+      "kind": "with_filters",
+      "judgments": {},
+      "expectedFilters": {
+        "sphere": ["municipal"]
+      }
+    },
+    {
+      "id": "q045",
+      "q": "serviços de engenharia",
+      "kind": "with_filters",
+      "judgments": {},
+      "expectedFilters": {
+        "value": {
+          "min": 1000000
+        }
+      }
+    }
+  ]
+}
