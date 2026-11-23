@@ -1,6 +1,9 @@
-import type { DashboardResponse, PipelineResponse } from '@agora/contracts';
+import type { DashboardResponse, PipelineResponse, RadarForYouResponse } from '@agora/contracts';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { Icon } from '@/components/Icon';
+import { ForYou } from '@/components/radar/ForYou';
+import { ForYouSkeleton } from '@/components/radar/ForYouSkeleton';
 import { Dash, DeadlineRuler, PageHeader, StateBlock } from '@/components/ui';
 import { api, problemText } from '@/lib/api';
 import { COVERAGE_LABEL } from '@/lib/coverage';
@@ -18,6 +21,8 @@ const weekLabel = (ymd: string) => {
 };
 
 export default async function Radar() {
+  // "Para você" sai em paralelo com o painel e chega por Suspense: se a rota falhar, só essa seção mostra erro.
+  const forYou = api<RadarForYouResponse>('/radar/for-you').catch(() => null);
   const [dash, pipe] = await Promise.all([
     api<DashboardResponse>('/dashboard'),
     api<PipelineResponse>('/pipeline'),
@@ -99,6 +104,10 @@ export default async function Radar() {
           </p>
         </div>
       </div>
+
+      <Suspense fallback={<ForYouSkeleton />}>
+        <ForYou promise={forYou} />
+      </Suspense>
 
       <section className="radarBlock" aria-labelledby="soon-h">
         <div className="radarBlockHead">

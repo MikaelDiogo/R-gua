@@ -18,6 +18,12 @@ No começo do dia, para ver o que mudou. Ele não substitui a busca: é um resum
 - **Vencem esta semana:** quantos editais com propostas abertas têm o prazo de encerramento nos próximos 7 dias.
 - **Valor em propostas:** a soma do valor estimado dos editais **do seu Funil** que estão nas etapas "Vou disputar", "Proposta enviada" ou "Em disputa". Embaixo, "N no seu funil" diz quantos são. Se nenhum desses editais tem valor estimado, aparece um traço (—): o órgão não informou o valor. Os dois primeiros números são do sistema inteiro; este terceiro é só seu.
 
+### Para você
+
+Logo abaixo dos números, o Radar sugere **editais abertos que combinam com o que você pesquisou no chat e vigia nos monitores**. Acima da lista aparecem os assuntos que ele usou, como "Pesquisou: material de limpeza em Crateús" ou "Monitor: notebooks". Cada edital mostra por que foi sugerido ("Porque você pesquisou: …") e traz o valor e a régua de prazo. Se você citou uma cidade, só entram editais dela. A lista mostra 6 editais; **Ver mais** abre até 10. A sugestão é só sua: ela usa apenas as suas pesquisas e os seus monitores.
+
+Se você ainda não pesquisou nem criou monitor, a seção explica isso e oferece **Ir para o chat** e **Criar monitor**. Se nenhum edital aberto combina agora, ela diz isso e leva ao Buscador.
+
 ### Prazos mais próximos
 
 Uma lista dos editais abertos que encerram primeiro. Cada linha traz o objeto (clique para abrir o edital; texto em caixa alta aparece em frase normal e a lista mostra até 3 linhas do objeto), o órgão, a UF, a modalidade, o valor estimado (ou traço, quando o órgão não informou) e a [régua de prazos](04-buscador.md#como-ler-a-régua-de-prazos). **Ver todos** abre o Buscador já filtrado para os próximos 7 dias, do prazo mais próximo ao mais distante.
@@ -38,6 +44,9 @@ Diz quantos editais o Régua tem guardados e a data do mais antigo. **Só o que 
 | Sem prazo próximo | "Sem editais novos com prazo se aproximando", com o botão **Abrir o Buscador**. |
 | O Funil não respondeu | "O funil não respondeu": o terceiro número vira traço até a próxima leitura. |
 | Falha geral | Uma faixa de erro com **Tentar de novo**. |
+| "Para você" sem assuntos | "Pesquise no chat ou crie um monitor e o Radar passa a sugerir editais para você.", com **Ir para o chat** e **Criar monitor**. |
+| "Para você" sem editais | "Nenhum edital aberto combina com o que você pesquisou agora. Veja de novo mais tarde.", com link para o Buscador. |
+| "Para você" não carregou | "Não consegui montar suas sugestões agora." com **Tentar de novo**. O resto do Radar continua normal. |
 
 O botão **Perguntar no chat** leva ao [Chat de IA](02-chat-de-ia.md).
 
