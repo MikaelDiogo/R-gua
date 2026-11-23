@@ -70,7 +70,7 @@ services:
     mem_limit: 256m
     networks: [data]
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -q PONG']
       interval: 10s
       timeout: 3s
       retries: 10
@@ -122,7 +122,13 @@ services:
     # data: banco. app: saída para Gemini/Tavily e entrada vinda do web.
     networks: [data, app]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3101/v1/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3101/v1/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -170,7 +176,13 @@ services:
     mem_limit: 768m
     networks: [app]
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/login').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
