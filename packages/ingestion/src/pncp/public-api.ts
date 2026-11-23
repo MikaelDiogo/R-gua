@@ -158,6 +158,58 @@ export class PncpPublicApi {
     return last;
   }
 
+  /**
+   * Abre um arquivo do PNCP para ler em fluxo (sem carregar tudo na memória). Mesmas regras do download: só host
+   * permitido (também após redirecionamento) e as mesmas novas tentativas quando o PNCP falha ao acaso. Quem chama
+   * cuida de ler o corpo e de impor o teto de bytes.
+   */
+  async openFile(
+    url: string,
+  ): Promise<PublicApiResult<{ res: Response; filename: string | null }>> {
+    let last = await this.openOnce(url);
+    for (let i = 1; i <= this.downloadRetries && !last.ok && isTransient(last); i++) {
+      await this.sleep(this.retryDelayMs * i);
+      last = await this.openOnce(url);
+    }
+    return last;
+  }
+
+  private async openOnce(
+    url: string,
+  ): Promise<PublicApiResult<{ res: Response; filename: string | null }>> {
+    let u: URL;
+    try {
+      u = new URL(url);
+    } catch {
+      return { ok: false, status: 0, error: 'invalid_url' };
+    }
+    if (u.protocol !== 'https:' || !ALLOWED_HOSTS(u.host)) {
+      return { ok: false, status: 0, error: 'host_not_allowed' };
+    }
+    await this.acquire();
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 60_000); // só até chegarem os cabeçalhos
+    try {
+      const res = await this.doFetch(u.toString(), { signal: ctrl.signal });
+      if (res.url && !ALLOWED_HOSTS(new URL(res.url).host)) {
+        await res.body?.cancel().catch(() => undefined);
+        return { ok: false, status: 0, error: 'host_not_allowed' };
+      }
+      if (!res.ok) {
+        await res.body?.cancel().catch(() => undefined);
+        return { ok: false, status: res.status, error: `http_${res.status}` };
+      }
+      const cd = res.headers.get('content-disposition') ?? '';
+      const filename = /filename="?([^";]+)"?/i.exec(cd)?.[1] ?? null;
+      return { ok: true, data: { res, filename } };
+    } catch (e) {
+      const aborted = e instanceof Error && e.name === 'AbortError';
+      return { ok: false, status: 0, error: aborted ? 'timeout' : 'network' };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   private async downloadOnce(
     url: string,
     maxBytes: number,

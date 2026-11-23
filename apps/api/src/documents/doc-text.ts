@@ -24,7 +24,7 @@ export const LIMITS = {
   minCharsPerPage: 40,
 };
 
-const isPdf = (b: Uint8Array) =>
+export const isPdf = (b: Uint8Array) =>
   b.length > 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46; // %PDF
 const isZip = (b: Uint8Array) =>
   b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && (b[2] === 0x03 || b[2] === 0x05);

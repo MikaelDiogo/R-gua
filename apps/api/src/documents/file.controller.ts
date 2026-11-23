@@ -27,14 +27,17 @@ export class DocumentFileController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ) {
     try {
-      const f = await this.files.pdf(id, sequence);
+      const f = await this.files.open(id, sequence);
       void reply
         .header('content-type', 'application/pdf')
         .header('cache-control', 'private, max-age=300')
         .header('x-content-type-options', 'nosniff')
         .header('content-security-policy', "frame-ancestors 'self'")
         .header('x-frame-options', 'SAMEORIGIN');
-      return new StreamableFile(f.bytes, { disposition: `inline; filename="${f.filename}"` });
+      const disposition = `inline; filename="${f.filename}"`;
+      return f.kind === 'stream'
+        ? new StreamableFile(f.stream, { disposition, length: f.length ?? undefined })
+        : new StreamableFile(f.bytes, { disposition });
     } catch (e) {
       const fromBrowser = String(req.headers.accept ?? '').includes('text/html');
       if (fromBrowser && e instanceof DomainError && e.code !== 'unauthenticated') {

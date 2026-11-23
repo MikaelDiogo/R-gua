@@ -108,4 +108,74 @@ describe('DocumentFileService', () => {
     expect(await codeOf(s.pdf('nao-uuid', '1'))).toMatch(/^outro:/);
     expect(await codeOf(s.pdf(ID, 'abc'))).toMatch(/^outro:/);
   });
+
+  it('open: PDF direto sai em fluxo, inteiro e sem passar pela memória toda de uma vez', async () => {
+    const { s } = svc({ doc: { title: 'Edital', url: 'https://pncp.gov.br/a' } });
+    const body = new Blob([pdf('conteudo-do-edital'), new Uint8Array(200_000)]).stream();
+    (s as unknown as { api: unknown }).api = {
+      openFile: async () => ({
+        ok: true,
+        data: {
+          res: new Response(body, { headers: { 'content-length': '200027' } }),
+          filename: 'Edital Nº 1.pdf',
+        },
+      }),
+    };
+    const f = await s.open(ID, '1');
+    expect(f.kind).toBe('stream');
+    if (f.kind !== 'stream') return;
+    expect(f.filename).toBe('Edital_N_1.pdf');
+    expect(f.length).toBe(200027);
+    let n = 0;
+    let first = '';
+    for await (const c of f.stream) {
+      if (!first) first = new TextDecoder().decode((c as Uint8Array).slice(0, 8));
+      n += (c as Uint8Array).length;
+    }
+    expect(first).toBe('%PDF-1.4');
+    expect(n).toBe(200027);
+  });
+
+  it('open: ZIP é aberto e o PDF de dentro é entregue em bytes; sem PDF dentro → 415', async () => {
+    const { s } = svc({ doc: { title: 'Anexos', url: 'https://pncp.gov.br/a' } });
+    const serve = (bytes: Uint8Array) => {
+      (s as unknown as { api: unknown }).api = {
+        openFile: async () => ({ ok: true, data: { res: new Response(bytes), filename: null } }),
+      };
+    };
+    serve(zipSync({ 'Edital.pdf': pdf('dentro-do-zip') }));
+    const f = await s.open(ID, '1');
+    expect(f.kind).toBe('bytes');
+    if (f.kind === 'bytes') expect(new TextDecoder().decode(f.bytes)).toContain('dentro-do-zip');
+    serve(zipSync({ 'a.txt': new TextEncoder().encode('x') }));
+    expect(await codeOf(s.open(ID, '1'))).toBe('unsupported_media_type');
+  });
+
+  it('open: falha da fonte e arquivo declarado grande demais viram erro claro com o endereço do PNCP', async () => {
+    const { s } = svc({ doc: { title: 'Edital', url: 'https://pncp.gov.br/a' } });
+    (s as unknown as { api: unknown }).api = {
+      openFile: async () => ({ ok: false, status: 422, error: 'http_422' }),
+    };
+    expect(await codeOf(s.open(ID, '1'))).toBe('source_unavailable');
+    (s as unknown as { api: unknown }).api = {
+      openFile: async () => ({
+        ok: true,
+        data: {
+          res: new Response('x', { headers: { 'content-length': String(500 * 1024 * 1024) } }),
+          filename: null,
+        },
+      }),
+    };
+    expect(await codeOf(s.open(ID, '1'))).toBe('validation_failed');
+    try {
+      await s.open(ID, '1');
+    } catch (e) {
+      expect((e as DomainError).meta?.pncp_url).toBe('https://pncp.gov.br/a');
+    }
+  });
+
+  it('open: host que não é do PNCP nunca é aberto', async () => {
+    const { s } = svc({ doc: { title: 'Edital', url: 'https://evil.example.com/edital.pdf' } });
+    expect(await codeOf(s.open(ID, '1'))).toBe('source_unavailable');
+  });
 });
