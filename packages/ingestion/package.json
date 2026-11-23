@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@agora/contracts": "workspace:*",
+    "@agora/db": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
     "typescript": "~5.9.3",
     "vitest": "^5.0.5"
   }

@@ -1,5 +1,5 @@
 import type { Db } from '@agora/db';
-import type { NormalizedProcurement, RawPage } from '@agora/ingestion';
+import type { NormalizedProcurement, RawPage } from './types';
 
 export interface UpsertStats {
   inserted: number;
@@ -183,9 +183,20 @@ export async function saveRaw(db: Db, source: string, pages: RawPage[]): Promise
   }
 }
 
+/** Modalidade 0 = "todas" (janela sem filtro de modalidade). NULL não serve: NULL nunca conflita na UNIQUE e duplicaria a linha. */
+const modalityKey = (m: number | undefined) => m ?? 0;
+
+export interface WindowKey {
+  source: string;
+  endpoint: string;
+  modality?: number | undefined;
+  start: string;
+  end: string;
+}
+
 export async function recordWindow(
   db: Db,
-  w: { source: string; endpoint: string; modality?: number; start: string; end: string },
+  w: WindowKey,
   state: 'running' | 'ok' | 'partial' | 'failed',
   records: number,
   error?: string,
@@ -196,14 +207,32 @@ export async function recordWindow(
      ON CONFLICT (source, endpoint, modality, window_start, window_end)
      DO UPDATE SET state = EXCLUDED.state, attempts = ingest_window.attempts + 1, records = EXCLUDED.records,
        last_error = EXCLUDED.last_error, updated_at = now()`,
-    [w.source, w.endpoint, w.modality ?? null, w.start, w.end, state, records, error ?? null],
+    [w.source, w.endpoint, modalityKey(w.modality), w.start, w.end, state, records, error ?? null],
   );
+}
+
+/** Estado e idade (em horas) do último registro da janela, para retomar uma carga sem refazer o que já está ok. */
+export async function windowState(
+  db: Db,
+  w: WindowKey,
+): Promise<{ state: string; ageHours: number } | null> {
+  const r = await db.query<{ state: string; age_hours: string }>(
+    `SELECT state, EXTRACT(EPOCH FROM (now() - updated_at)) / 3600 AS age_hours FROM ingest_window
+     WHERE source = $1 AND endpoint = $2 AND modality = $3 AND window_start = $4 AND window_end = $5`,
+    [w.source, w.endpoint, modalityKey(w.modality), w.start, w.end],
+  );
+  const row = r.rows[0];
+  return row ? { state: row.state, ageHours: Number(row.age_hours) } : null;
 }
 
 /** Fecha os vencidos (docs/07 §3) e reconstrói o vocabulário de sugestões e correção ortográfica. */
 export async function maintenance(db: Db): Promise<{ closed: number; vocab: number }> {
   const closed = await db.query(
     'UPDATE procurements SET is_open = false WHERE is_open AND proposals_close_at <= now()',
+  );
+  // O status acompanha o prazo (o mesmo resultado de buscar de novo no PNCP): aberta vencida vira encerrada.
+  await db.query(
+    "UPDATE procurements SET status = 'closed' WHERE status = 'open_for_proposals' AND proposals_close_at <= now()",
   );
   await db.query('DELETE FROM search_vocab');
   const vocab = await db.query(

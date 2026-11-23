@@ -35,15 +35,26 @@ export function mapSphere(esferaId: string | null | undefined): Sphere | null {
 }
 
 /**
- * Situação da compra. Revogada, anulada e suspensa vêm do nome (ids 2 em diante nas fixtures: 1=Divulgada, 2=Revogada).
- * "Divulgada" não diz se as propostas ainda estão abertas: isso sai das datas, na normalização.
+ * Situação da compra → enum do contrato (ProcurementStatus). Mapa:
+ *   "Divulgada no PNCP"          → 'divulgada' (a normalização decide pelas datas: propostas abertas = open_for_proposals,
+ *                                   prazo vencido = closed, sem prazo = unknown)
+ *   Revogada / Anulada / Cancelada → canceled
+ *   Suspensa                      → suspended
+ *   Homologada / Encerrada / Concluída / Fracassada / Deserta / Adjudicada → closed
+ *   Em julgamento / Em disputa    → in_session
+ *   qualquer outro texto          → unknown (nunca é chutado)
+ * Observação: nas respostas de consulta do PNCP a compra só tem as situações Divulgada, Revogada, Anulada e Suspensa;
+ * "encerrada" e "homologada" aparecem pelas datas (e por valorTotalHomologado), então o 'closed' vem da normalização.
+ * As entradas extras abaixo são defensivas: se o PNCP passar a mandar o nome, o mapa já cobre sem inventar valor novo.
  */
 export function mapStatusFromName(
   name: string,
-): Exclude<ProcurementStatus, 'open_for_proposals' | 'in_session' | 'closed'> | 'divulgada' {
+): Exclude<ProcurementStatus, 'open_for_proposals'> | 'divulgada' {
   const n = name.toLowerCase();
   if (n.includes('revogad') || n.includes('anulad') || n.includes('cancelad')) return 'canceled';
   if (n.includes('suspens')) return 'suspended';
+  if (/homologad|encerrad|conclu[ií]d|fracassad|desert|adjudicad/.test(n)) return 'closed';
+  if (n.includes('julgament') || n.includes('em disputa')) return 'in_session';
   if (n.includes('divulgad')) return 'divulgada';
   return 'unknown';
 }

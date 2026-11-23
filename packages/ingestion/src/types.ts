@@ -13,6 +13,8 @@ export interface IngestWindow {
   modality?: number;
   /** Sigla da UF (a API do PNCP filtra por ela). */
   uf?: string;
+  /** Código IBGE do município (a API de consulta do PNCP filtra por `codigoMunicipioIbge`). */
+  municipalityIbge?: string;
   /** yyyyMMdd (inclusive) */
   start: string;
   /** yyyyMMdd (inclusive) */

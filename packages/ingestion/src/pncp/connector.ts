@@ -71,12 +71,29 @@ export class PncpConnector implements SourceConnector {
   }
 
   /** Conjunto "quente" (docs/05 §5.3): propostas ainda abertas até `until`. `modality` opcional (a API aceita omitir). */
-  openProposalsWindow(until: Date, modality?: number, uf?: string): IngestWindow {
+  openProposalsWindow(
+    until: Date,
+    modality?: number,
+    uf?: string,
+    municipalityIbge?: string,
+  ): IngestWindow {
     const day = toPncpDate(until);
-    return { source: this.id, endpoint: EP_PROPOSTA, modality, uf, start: day, end: day };
+    return {
+      source: this.id,
+      endpoint: EP_PROPOSTA,
+      modality,
+      uf,
+      ...(municipalityIbge ? { municipalityIbge } : {}),
+      start: day,
+      end: day,
+    };
   }
 
-  async fetch(window: IngestWindow): Promise<SourceFetchResult> {
+  /**
+   * Percorre TODAS as páginas da janela (até `maxPages`). `deadline` (epoch ms) interrompe entre páginas: a coleta
+   * ao vivo por município precisa responder rápido e devolve `complete: false` com o que já veio.
+   */
+  async fetch(window: IngestWindow, opts: { deadline?: number } = {}): Promise<SourceFetchResult> {
     const raw: RawPage[] = [];
     const items: NormalizedProcurement[] = [];
     let totalPages: number | null = null;
@@ -86,6 +103,9 @@ export class PncpConnector implements SourceConnector {
     const now = this.clock();
 
     for (let pagina = 1; pagina <= this.maxPages; pagina++) {
+      if (pagina > 1 && opts.deadline !== undefined && this.clock().getTime() > opts.deadline) {
+        return done('ok', false, 'deadline');
+      }
       const params = this.paramsFor(window, pagina);
       const res = await this.client.get(window.endpoint, params);
       raw.push({
@@ -181,6 +201,7 @@ export class PncpConnector implements SourceConnector {
       return {
         dataFinal: w.end,
         ...(w.uf ? { uf: w.uf } : {}),
+        ...(w.municipalityIbge ? { codigoMunicipioIbge: w.municipalityIbge } : {}),
         ...(w.modality !== undefined ? { codigoModalidadeContratacao: w.modality } : {}),
         ...base,
       };
@@ -191,6 +212,7 @@ export class PncpConnector implements SourceConnector {
       dataFinal: w.end,
       codigoModalidadeContratacao: w.modality,
       ...(w.uf ? { uf: w.uf } : {}),
+      ...(w.municipalityIbge ? { codigoMunicipioIbge: w.municipalityIbge } : {}),
       ...base,
     };
   }
