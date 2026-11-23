@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 import { COVERAGE_LABEL, COVERAGE_UFS, UF_NAMES } from '@/lib/coverage';
 import { failureOf } from '@/lib/failure';
-import { fmtInt, readable } from '@/lib/format';
+import { fmtInt, readable, readableName } from '@/lib/format';
 import { MODALITIES } from '@/lib/modalities';
 import { parseBRL, toInputBRL } from '@/lib/money';
 import { brtYmd, dayEndIso, dayStartIso, intentParts, suggestName } from '@/lib/monitors';
@@ -723,7 +723,7 @@ export function MonitorWizard({
                       {readable(it.object)}
                     </Link>
                     <span className={s.previewMeta}>
-                      {it.organ.name}
+                      {readableName(it.organ.name)}
                       {it.organ.uf ? ` · ${it.organ.uf}` : ''}
                     </span>
                     <DeadlineRuler deadline={it.deadline} bar={false} />

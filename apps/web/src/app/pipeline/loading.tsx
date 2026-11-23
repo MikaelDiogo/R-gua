@@ -3,8 +3,8 @@ import { PageHeader, SkeletonRows } from '@/components/ui';
 export default function Loading() {
   return (
     <>
-      <PageHeader title="Pipeline" />
-      <SkeletonRows rows={5} label="Carregando o pipeline" />
+      <PageHeader title="Funil" />
+      <SkeletonRows rows={5} label="Carregando o funil" />
     </>
   );
 }

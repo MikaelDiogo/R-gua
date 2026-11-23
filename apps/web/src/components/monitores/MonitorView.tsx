@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { failureOf } from '@/lib/failure';
-import { fmtBRL } from '@/lib/format';
+import { fmtBRL, readableName } from '@/lib/format';
 import { notifyAlertsChanged } from '@/lib/monitors';
 import { usePaging } from '@/lib/paging';
 import { AlertCard, PipelineButton } from '../alertas/AlertCard';
@@ -252,7 +252,7 @@ export function MonitorView({ data }: { data: MonitorDetail }) {
                           </Link>
                         </span>
                         <span className={s.sub}>
-                          {it.organ.name} · {it.modality.name}
+                          {readableName(it.organ.name)} · {it.modality.name}
                         </span>
                       </td>
                       <td data-label="UF">{it.organ.uf ?? '—'}</td>

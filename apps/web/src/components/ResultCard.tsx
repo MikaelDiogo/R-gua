@@ -3,7 +3,7 @@
 import type { ProcurementSummary } from '@agora/contracts';
 import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
-import { fmtBRL, readable } from '@/lib/format';
+import { fmtBRL, readable, readableName } from '@/lib/format';
 import s from './search.module.css';
 import { DeadlineRuler } from './ui';
 
@@ -119,7 +119,7 @@ export function ResultCard({
       <div>
         <Title item={item} className={s.cardTitle} />
         <p className={s.cardMeta}>
-          {item.organ.name}
+          {readableName(item.organ.name)}
           {place ? ` · ${place}` : ''} · {item.modality.name}
         </p>
         <div className={s.tags}>
@@ -183,7 +183,7 @@ export function ResultTable({
                 <td className={s.colObject}>
                   <Title item={item} className={s.title} />
                   <span className={s.sub}>
-                    {item.organ.name}
+                    {readableName(item.organ.name)}
                     {place ? ` · ${place}` : ''}
                   </span>
                   <div className={s.tags}>

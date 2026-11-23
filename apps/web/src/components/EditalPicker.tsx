@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { callLong } from '@/lib/call';
 import type { Failure } from '@/lib/failure';
-import { fmtBRL } from '@/lib/format';
+import { fmtBRL, readableName } from '@/lib/format';
 import { Icon } from './Icon';
 import s from './search.module.css';
 
@@ -96,7 +96,7 @@ export function EditalPicker({
               <div className={s.pickerText}>
                 <p className={s.pickerObject}>{i.object}</p>
                 <p className={s.pickerMeta}>
-                  {i.organ.name} · {i.organ.uf ?? '—'} ·{' '}
+                  {readableName(i.organ.name)} · {i.organ.uf ?? '—'} ·{' '}
                   {i.estimated_value ? fmtBRL(i.estimated_value) : '—'} · {i.deadline.label}
                 </p>
               </div>

@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, newKey, problemText } from '@/lib/api';
 import { ufName } from '@/lib/coverage';
-import { fmtBRL, fmtDate, readable } from '@/lib/format';
+import { fmtBRL, fmtDate, readable, readableName } from '@/lib/format';
 import { ReadPdfButton } from '../edital/ReadPdfButton';
 import s from './chat.module.css';
 
@@ -312,7 +312,7 @@ function RankedCard({ r, cite }: { r: AiRanked; cite: (url: string) => number | 
             </Link>
           </h3>
           <div className="rg-edital-meta">
-            <span>{p.organ.name}</span>
+            <span>{readableName(p.organ.name)}</span>
             {place ? <span>{place}</span> : null}
             <span>{p.modality.name}</span>
           </div>
@@ -455,7 +455,7 @@ function Watch({ label, items }: { label: string; items: Proc[] }) {
                     </Link>
                   </h4>
                   <div className="rg-edital-meta">
-                    <span>{p.organ.name}</span>
+                    <span>{readableName(p.organ.name)}</span>
                     {place ? <span>{place}</span> : null}
                     <span>{p.modality.name}</span>
                   </div>

@@ -4,7 +4,7 @@ import { Icon } from '@/components/Icon';
 import { Dash, DeadlineRuler, PageHeader, StateBlock } from '@/components/ui';
 import { api, problemText } from '@/lib/api';
 import { COVERAGE_LABEL } from '@/lib/coverage';
-import { fmtBRL, fmtDate, fmtInt, readable } from '@/lib/format';
+import { fmtBRL, fmtDate, fmtInt, readable, readableName } from '@/lib/format';
 
 export const metadata = { title: 'Radar de oportunidades · Régua' };
 
@@ -130,7 +130,7 @@ export default async function Radar() {
                     {readable(e.object)}
                   </Link>
                   <p className="radarMeta">
-                    {e.organ.name}
+                    {readableName(e.organ.name)}
                     {e.organ.uf ? ` · ${e.organ.uf}` : ''} · {e.modality.name}
                   </p>
                 </div>

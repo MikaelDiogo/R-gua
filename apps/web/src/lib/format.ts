@@ -98,3 +98,53 @@ export function readable(text: string): string {
     .replace(/(^|[.!?]\s+)(\p{L})/gu, (_m, p, c) => p + c.toUpperCase())
     .replace(/^\p{L}/u, (c) => c.toUpperCase());
 }
+
+const ACRONYMS = new Set([
+  'SAAE',
+  'SEMAE',
+  'SESC',
+  'SENAI',
+  'SENAC',
+  'IFCE',
+  'IFPI',
+  'UFC',
+  'UFPI',
+  'UECE',
+  'UESPI',
+  'TCE',
+  'INSS',
+  'FUNDEB',
+  'CAGECE',
+  'FUNASA',
+  'SEMED',
+  'SEDUC',
+  'SESA',
+  'SESAPI',
+  'DNIT',
+  'DER',
+  'IBAMA',
+  'CE',
+  'PI',
+  'FMS',
+  'FME',
+  'FNDE',
+]);
+
+/** Só exibição: nome de órgão em CAIXA ALTA vira "Prefeitura Municipal de Vale Verde" (inicial maiúscula, exceto de/da/do...). */
+export function readableName(text: string): string {
+  const letters = text.replace(/[^A-Za-zÀ-ÿ]/g, '');
+  if (letters.length < 6) return text;
+  const upper = letters.replace(/[^A-ZÀ-Ý]/g, '').length;
+  if (upper / letters.length < 0.8) return text;
+  return text
+    .split(/(\s+)/)
+    .map((tok, i) => {
+      if (!tok.trim()) return tok;
+      const low = tok.toLowerCase();
+      if (/\d/.test(tok) || tok.includes('/')) return tok;
+      if (i > 0 && STOP.has(low)) return low;
+      if (ACRONYMS.has(tok)) return tok;
+      return low.charAt(0).toUpperCase() + low.slice(1);
+    })
+    .join('');
+}

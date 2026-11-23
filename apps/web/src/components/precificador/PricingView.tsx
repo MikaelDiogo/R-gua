@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { callLong } from '@/lib/call';
 import type { Failure } from '@/lib/failure';
-import { fmtBRL, fmtInt, fmtQty } from '@/lib/format';
+import { fmtBRL, fmtInt, fmtQty, readableName } from '@/lib/format';
 import { Icon } from '../Icon';
 import { Dash, Notice, SkeletonRows, StateBlock } from '../ui';
 import { MarginSimulator, type Prefill } from './MarginSimulator';
@@ -72,7 +72,7 @@ export function PricingView({ edital }: { edital: ProcurementDetail }) {
     <div className={s.stack}>
       <section className="wk-panel" aria-label="Edital escolhido">
         <p className="wk-meta">
-          {title} · {edital.organ.name}
+          {title} · {readableName(edital.organ.name)}
         </p>
         <p style={{ fontWeight: 500, marginTop: 'var(--space-1)' }}>{edital.object}</p>
         <p

@@ -1,36 +1,4 @@
-/* Pipeline: ações rápidas, notas e filtro de prazo dos cards. Só tokens. */
-
-.more {
-  margin-top: var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.toggle {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 32px;
-  padding: 0 var(--space-2);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--accent);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.toggle:hover {
-  background: var(--accent-soft);
-}
-
-.hasNote {
-  color: var(--muted);
-  font-size: 12px;
-}
+/* Funil: painel de responsável e notas do cartão. Só tokens. */
 
 .panel {
   display: flex;
@@ -39,33 +7,6 @@
   padding: var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--surface);
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-
-.actions a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-1);
-  min-height: 36px;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--card);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  text-decoration: none;
-}
-
-.actions a:hover {
-  background: var(--accent-soft);
 }
 
 .field {
@@ -92,6 +33,13 @@
   font: inherit;
 }
 
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 0;
+  box-shadow: var(--ring);
+  border-color: var(--accent);
+}
+
 .field textarea {
   resize: vertical;
   min-height: 72px;
@@ -100,7 +48,7 @@
 .save {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -114,28 +62,5 @@
   color: var(--warning);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
-  font-size: 12px;
-}
-
-.filterSelect {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.filterSelect select {
-  min-height: var(--control-height);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--glass-edge);
-  border-radius: var(--radius-sm);
-  background: var(--glass-bg-field);
-  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
-  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
-  color: var(--ink);
-  font: inherit;
-}
-
-.sumNote {
-  color: var(--muted);
   font-size: 12px;
 }

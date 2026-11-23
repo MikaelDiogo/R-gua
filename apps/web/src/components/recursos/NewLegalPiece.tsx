@@ -6,11 +6,13 @@ import type {
   LegalPiece,
   ProcurementDetail,
 } from '@agora/contracts';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { callLong } from '@/lib/call';
 import type { Failure } from '@/lib/failure';
+import { readableName } from '@/lib/format';
 import { KIND_EXAMPLE, KIND_HELP, KIND_LABEL, KINDS } from '@/lib/legal';
 import { Icon } from '../Icon';
 import { DeadlineRuler, Notice, StateBlock } from '../ui';
@@ -126,7 +128,7 @@ export function NewLegalPiece({
           <section className="wk-panel" aria-label="Edital escolhido">
             <div className={s.edital}>
               <p className="wk-meta">
-                {title} · {edital.organ.name}
+                {title} · {readableName(edital.organ.name)}
                 {edital.organ.uf ? ` · ${edital.organ.uf}` : ''}
               </p>
               <p className={s.editalObject}>{edital.object}</p>
@@ -229,7 +231,7 @@ export function NewLegalPiece({
             <div>
               <dt>Edital</dt>
               <dd>
-                {title} · {edital.organ.name}
+                {title} · {readableName(edital.organ.name)}
               </dd>
             </div>
             <div>

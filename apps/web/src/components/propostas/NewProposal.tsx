@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { callLong } from '@/lib/call';
 import type { Failure } from '@/lib/failure';
-import { fmtBRL, fmtDateTime, fmtQty } from '@/lib/format';
+import { fmtBRL, fmtDateTime, fmtQty, readableName } from '@/lib/format';
 import { parseBRL } from '@/lib/money';
 import { useUnsavedGuard } from '@/lib/unsaved';
 import { useCollect } from '@/lib/use-collect';
@@ -83,7 +83,7 @@ export function NewProposal({
     <div className={s.stack}>
       <section className="wk-panel" aria-label="Edital escolhido">
         <p className="wk-meta">
-          {title} · {detail.organ.name}
+          {title} · {readableName(detail.organ.name)}
         </p>
         <p style={{ fontWeight: 500, marginTop: 'var(--space-1)' }}>{detail.object}</p>
         <p style={{ marginTop: 'var(--space-2)' }}>

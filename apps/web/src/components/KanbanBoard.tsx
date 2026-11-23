@@ -4,13 +4,13 @@ import type { PipelineCard, PipelineResponse, PipelineState } from '@agora/contr
 import Link from 'next/link';
 import { type DragEvent, type KeyboardEvent, useRef, useState } from 'react';
 import { api, newKey } from '@/lib/api';
-import { fmtBRL, fmtCompactBRL, readable } from '@/lib/format';
+import { fmtBRL, readable, readableName } from '@/lib/format';
 import { slicePage, usePaging } from '@/lib/paging';
 import { Icon } from './Icon';
-import { Pagination, RangeText } from './Pagination';
+import { Pagination } from './Pagination';
 import b from './pipeline/board.module.css';
 import { CardDetails, type SaveResult } from './pipeline/CardDetails';
-import pl from './pipeline/pipeline.module.css';
+import { CardMenu } from './pipeline/CardMenu';
 import { Dash, DeadlineRuler, PageHeader, StateBlock } from './ui';
 
 /**
@@ -103,22 +103,19 @@ export function KanbanBoard({
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<PipelineState | 'encerrados' | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
+  const [details, setDetails] = useState<string | null>(null);
+  const [closedOpen, setClosedOpen] = useState(false);
   const dragRef = useRef<string | null>(null);
   const paging = usePaging({ page: 'pagina_encerrados', size: 'por_pagina' });
 
   const label = (s: PipelineState) => STATE_LABEL[s];
 
-  const header = (
-    <PageHeader
-      title="Funil"
-      stamp={initial?.server_now}
-      actions={
-        <Link href="/busca" className="rg-btn rg-btn-primary">
-          <Icon name="search" size={14} /> Buscar editais
-        </Link>
-      }
-    />
+  const searchBtn = (
+    <Link href="/busca" className="rg-btn rg-btn-primary">
+      <Icon name="search" size={14} /> Buscar editais
+    </Link>
   );
+  const header = <PageHeader title="Funil" actions={searchBtn} />;
 
   if (error || !initial) {
     return (
@@ -298,16 +295,8 @@ export function KanbanBoard({
     },
   });
 
-  const active = cards.filter(
-    (c) => !['ganho', 'perdido', 'desistencia', 'descartado'].includes(c.state),
-  );
-  const urgent = active.filter(
-    (c) => c.procurement.deadline.level === 'critical' || c.procurement.deadline.level === 'soon',
-  ).length;
-  const lead =
-    cards.length === 0
-      ? 'Nenhum edital no funil ainda.'
-      : `${active.length} ${active.length === 1 ? 'edital em andamento' : 'editais em andamento'}${urgent ? `, ${urgent} com prazo chegando.` : '.'}`;
+  const stages = ORDER.map((value) => ({ value, label: label(value) }));
+  const closing = OFFBOARD.map((value) => ({ value, label: label(value) }));
 
   const options = (card: PipelineCard) => (
     <>
@@ -332,7 +321,11 @@ export function KanbanBoard({
   const renderCard = (card: PipelineCard) => {
     const p = card.procurement;
     const problem = problems[card.id];
-    const canDrag = !pending[card.id] && editing !== card.id;
+    const canDrag = !pending[card.id] && editing !== card.id && details !== card.id;
+    const overdue =
+      p.deadline.level === 'closed' &&
+      !OFFBOARD.includes(card.state) &&
+      !['ganho', 'perdido'].includes(card.state);
     return (
       <li
         key={card.id}
@@ -340,14 +333,9 @@ export function KanbanBoard({
         // biome-ignore lint/a11y/noNoninteractiveTabindex: o card recebe foco para mover com Alt+setas
         tabIndex={0}
         draggable={canDrag}
+        title="Arraste para outra etapa. Com o cartão em foco: Alt + ← ou →"
         data-pending={pending[card.id] || undefined}
-        data-overdue={
-          p.deadline.level === 'closed' &&
-          !OFFBOARD.includes(card.state) &&
-          !['ganho', 'perdido'].includes(card.state)
-            ? 'true'
-            : undefined
-        }
+        data-overdue={overdue ? 'true' : undefined}
         data-dragging={dragId === card.id || undefined}
         data-error={problem ? 'true' : undefined}
         onKeyDown={(ev) => onKey(ev, card)}
@@ -355,69 +343,72 @@ export function KanbanBoard({
         onDragEnd={onDragEnd}
         aria-label={`${p.numero_controle_pncp}, ${p.organ.name}`}
       >
-        <Link href={`/editais/${p.id}`} className={`${b.kcardTitle} clamp3`} draggable={false}>
-          {readable(p.object)}
-        </Link>
-        <p className={b.kcardMeta}>
-          {p.organ.name}
-          {p.organ.uf ? ` · ${p.organ.uf}` : ''}
-        </p>
-        <div className={`${b.kcardRow}`}>
+        <div className={b.kcardTop}>
+          <Link href={`/editais/${p.id}`} className={`${b.kcardTitle} clamp3`} draggable={false}>
+            {readable(p.object)}
+          </Link>
+          <CardMenu
+            procurementId={p.id}
+            current={card.state}
+            stages={stages}
+            closing={closing}
+            disabled={Boolean(pending[card.id])}
+            hasAssignee={Boolean(card.assignee)}
+            onMove={(to) => void move(card.id, to)}
+            onAssignee={() => setEditing(card.id)}
+            onNotes={() => setDetails(card.id)}
+          />
+        </div>
+
+        <div className={b.kcardMetaRow}>
+          <p className={b.kcardMeta}>
+            {readableName(p.organ.name)}
+            {p.organ.uf ? ` · ${p.organ.uf}` : ''}
+          </p>
+          {card.assignee && editing !== card.id ? (
+            <span
+              className="rg-avatar"
+              data-tone={toneOf(card.assignee)}
+              title={`Responsável: ${card.assignee}`}
+              role="img"
+              aria-label={`Responsável: ${card.assignee}`}
+            >
+              {initials(card.assignee)}
+            </span>
+          ) : null}
+        </div>
+
+        {editing === card.id ? (
+          <input
+            className={b.assigneeInput}
+            // biome-ignore lint/a11y/noAutofocus: o campo abre por ação do usuário
+            autoFocus
+            aria-label="Responsável"
+            placeholder="Quem cuida deste edital"
+            defaultValue={card.assignee ?? ''}
+            maxLength={120}
+            onBlur={(ev) => void saveAssignee(card, ev.currentTarget.value)}
+            onKeyDown={(ev) => {
+              if (ev.key === 'Enter') ev.currentTarget.blur();
+              if (ev.key === 'Escape') setEditing(null);
+            }}
+          />
+        ) : null}
+
+        <div className={b.kcardFoot}>
+          <DeadlineRuler deadline={p.deadline} mini />
           <span className={b.kvalue}>
             {p.estimated_value != null ? fmtBRL(p.estimated_value) : <Dash />}
           </span>
-          <DeadlineRuler deadline={p.deadline} mini />
         </div>
-        <div className={`${b.kcardFoot}`}>
-          <div className={`${b.kcardWho}`}>
-            {editing === card.id ? (
-              <input
-                className={`${b.assigneeInput}`}
-                // biome-ignore lint/a11y/noAutofocus: o campo abre por ação do usuário
-                autoFocus
-                aria-label="Responsável"
-                defaultValue={card.assignee ?? ''}
-                maxLength={120}
-                onBlur={(ev) => void saveAssignee(card, ev.currentTarget.value)}
-                onKeyDown={(ev) => {
-                  if (ev.key === 'Enter') ev.currentTarget.blur();
-                  if (ev.key === 'Escape') setEditing(null);
-                }}
-              />
-            ) : (
-              <button
-                type="button"
-                className={`${b.assigneeBtn}`}
-                onClick={() => setEditing(card.id)}
-                aria-label={`Responsável: ${card.assignee ?? 'nenhum'}. Editar`}
-              >
-                {card.assignee ? (
-                  <>
-                    <span
-                      className="rg-avatar"
-                      data-tone={toneOf(card.assignee)}
-                      aria-hidden="true"
-                    >
-                      {initials(card.assignee)}
-                    </span>
-                    <span className={b.assigneeName}>{card.assignee}</span>
-                  </>
-                ) : (
-                  'Definir responsável'
-                )}
-              </button>
-            )}
-          </div>
-          <select
-            aria-label={`Mover ${p.numero_controle_pncp} para`}
-            value=""
-            disabled={Boolean(pending[card.id])}
-            onChange={(ev) => void move(card.id, ev.target.value as PipelineState)}
-          >
-            {options(card)}
-          </select>
-        </div>
-        <CardDetails card={card} onSave={(patch) => saveCard(card, patch)} />
+
+        {details === card.id ? (
+          <CardDetails
+            card={card}
+            onSave={(patch) => saveCard(card, patch)}
+            onClose={() => setDetails(null)}
+          />
+        ) : null}
         {problem ? (
           <div className="wk-problem" role="alert">
             <Icon name="alert" size={14} />
@@ -440,7 +431,7 @@ export function KanbanBoard({
   if (cards.length === 0) {
     return (
       <>
-        <PageHeader title="Funil" lead={lead} stamp={initial.server_now} />
+        <PageHeader title="Funil" />
         <StateBlock
           kind="empty"
           title="Seu funil está vazio."
@@ -459,119 +450,104 @@ export function KanbanBoard({
   const closed = visible.filter((c) => OFFBOARD.includes(c.state));
   const closedView = slicePage(closed, paging.page, paging.perPage);
   const filtering = who !== 'Todos' || q !== '' || due !== 'todos';
+  const closedShown = closedOpen || dragId !== null;
+  const toolbar = (
+    <div className={b.tools}>
+      <div className={b.boardSearch}>
+        <Icon name="search" size={14} />
+        <label htmlFor="board-q" className="wk-sr-only">
+          Buscar no funil
+        </label>
+        <input
+          id="board-q"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar no funil"
+          autoComplete="off"
+        />
+      </div>
+      <select
+        className={b.tsel}
+        aria-label="Filtrar por responsável"
+        value={who}
+        onChange={(e) => setWho(e.target.value)}
+      >
+        <option value="Todos">Todos os responsáveis</option>
+        {assignees.map((w) => (
+          <option key={w} value={w}>
+            {w}
+          </option>
+        ))}
+        <option value="Sem responsável">Sem responsável</option>
+      </select>
+      <select
+        className={b.tsel}
+        aria-label="Filtrar por prazo"
+        value={due}
+        onChange={(e) => setDue(e.target.value as Due)}
+      >
+        {(Object.keys(DUE_LABEL) as Due[]).map((d) => (
+          <option key={d} value={d}>
+            {d === 'todos' ? 'Todos os prazos' : DUE_LABEL[d]}
+          </option>
+        ))}
+      </select>
+      {filtering ? (
+        <button
+          type="button"
+          className="wk-linkbtn"
+          onClick={() => {
+            setQuery('');
+            setWho('Todos');
+            setDue('todos');
+          }}
+        >
+          Limpar
+        </button>
+      ) : null}
+      {searchBtn}
+    </div>
+  );
+
   return (
     <>
-      <PageHeader
-        title="Funil"
-        lead={lead}
-        stamp={initial.server_now}
-        actions={
-          <Link href="/busca" className="rg-btn rg-btn-primary">
-            <Icon name="search" size={14} /> Buscar editais
-          </Link>
-        }
-      />
-
-      <div className={`${b.boardTools}`}>
-        <div className={`${b.boardSearch}`}>
-          <Icon name="search" size={14} />
-          <label htmlFor="board-q" className="wk-sr-only">
-            Buscar no quadro
-          </label>
-          <input
-            id="board-q"
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar no quadro"
-            autoComplete="off"
-          />
-        </div>
-        <div className={`${b.aiSelect}`}>
-          <label htmlFor="who">Responsável:</label>
-          <select id="who" value={who} onChange={(e) => setWho(e.target.value)}>
-            {['Todos', ...assignees, 'Sem responsável'].map((w) => (
-              <option key={w}>{w}</option>
-            ))}
-          </select>
-        </div>
-        <div className={`${b.aiSelect} ${pl.filterSelect}`}>
-          <label htmlFor="due">Prazo:</label>
-          <select id="due" value={due} onChange={(e) => setDue(e.target.value as Due)}>
-            {(Object.keys(DUE_LABEL) as Due[]).map((d) => (
-              <option key={d} value={d}>
-                {DUE_LABEL[d]}
-              </option>
-            ))}
-          </select>
-        </div>
-        {filtering ? (
-          <button
-            type="button"
-            className="wk-linkbtn"
-            onClick={() => {
-              setQuery('');
-              setWho('Todos');
-              setDue('todos');
-            }}
-          >
-            Limpar filtros
-          </button>
-        ) : null}
-        <p className={`wk-hint ${b.boardHint}`}>
-          Arraste os cartões entre as etapas ou use “Mover para…”. Com o card em foco:{' '}
-          <kbd className="wk-kbd">Alt</kbd> + <kbd className="wk-kbd">←</kbd>
-          <kbd className="wk-kbd">→</kbd>
-        </p>
-      </div>
+      <PageHeader title="Funil" actions={toolbar} />
       <p className="wk-sr-only" role="status" aria-live="polite">
         {announce}
       </p>
 
-      <div className={`${b.boardScroll}`}>
-        <div className={`${b.board}`} data-dragging={dragId ? 'true' : undefined}>
+      <div className={b.boardScroll}>
+        <div className={b.board} data-dragging={dragId ? 'true' : undefined}>
           {ORDER.map((stage) => {
             const list = visible.filter((c) => c.state === stage);
-            const sum = list.reduce((s, c) => s + (c.procurement.estimated_value ?? 0), 0);
-            const noValue = list.filter((c) => c.procurement.estimated_value == null).length;
             return (
               <section
-                className={`${b.kcol}`}
+                className={b.kcol}
                 key={stage}
                 data-stage={stage}
                 data-over={over === stage || undefined}
                 aria-labelledby={`col-${stage}`}
                 {...dropProps(stage)}
               >
-                <div className={`${b.kcolHead}`}>
+                <div className={b.kcolHead}>
                   <h2 id={`col-${stage}`}>
+                    {stage === 'ganho' || stage === 'perdido' ? (
+                      <span
+                        className={b.dot}
+                        data-tone={stage === 'ganho' ? 'success' : 'error'}
+                        aria-hidden="true"
+                      />
+                    ) : null}
                     {label(stage)}
                     <span className={`${b.kcount} wk-num`}>{list.length}</span>
                   </h2>
-                  <p
-                    className={`${b.ksum} wk-num`}
-                    title={
-                      noValue > 0
-                        ? `Soma dos valores informados; ${noValue} ${noValue === 1 ? 'card' : 'cards'} sem valor no edital.`
-                        : 'Soma dos valores estimados dos cards.'
-                    }
-                  >
-                    {sum > 0 ? fmtCompactBRL(sum) : <Dash />}
-                    {noValue > 0 && sum > 0 ? (
-                      <span className={pl.sumNote}> +{noValue} s/ valor</span>
-                    ) : null}
-                  </p>
                 </div>
-                <ul className={`${b.kcards}`}>
+                <ul className={b.kcards}>
                   {list.map(renderCard)}
-                  {over === stage && dragId ? (
-                    <li className={`${b.kdrop}`} aria-hidden="true">
-                      Solte aqui para mover para {label(stage)}
-                    </li>
-                  ) : null}
-                  {list.length === 0 && !(over === stage && dragId) ? (
-                    <li className={`${b.kempty}`}>
-                      {filtering ? 'Nenhum card com este filtro.' : 'Nenhum card nesta etapa.'}
+                  {list.length === 0 ? (
+                    <li className={b.kempty}>
+                      {filtering ? 'Nenhum edital com este filtro.' : 'Arraste um edital para cá'}
                     </li>
                   ) : null}
                 </ul>
@@ -582,76 +558,82 @@ export function KanbanBoard({
       </div>
 
       <section
-        className={`wk-panel ${b.closedPanel}`}
+        className={b.closed}
         aria-labelledby="closed-h"
         data-over={over === 'encerrados' || undefined}
         {...dropProps('encerrados')}
       >
-        <div className="wk-panel-head">
-          <h2 id="closed-h">Encerrados</h2>
-          <span className="wk-meta" aria-live="polite">
-            {over === 'encerrados' && dragId ? (
-              'Solte aqui para descartar'
+        <h2 id="closed-h" className="wk-sr-only">
+          Encerrados
+        </h2>
+        <button
+          type="button"
+          className={b.closedToggle}
+          aria-expanded={closedShown}
+          aria-controls="closed-body"
+          onClick={() => setClosedOpen((v) => !v)}
+        >
+          <Icon name={closedShown ? 'chevronDown' : 'chevronRight'} size={14} />
+          Encerrados ({closed.length})
+          {over === 'encerrados' && dragId ? ' · solte aqui para descartar' : ''}
+        </button>
+        {closedShown ? (
+          <div className={b.closedBody} id="closed-body">
+            {closed.length === 0 ? (
+              <p className={b.closedHint}>
+                Desistências e descartados aparecem aqui. Arraste um cartão para cá para
+                descartá-lo.
+              </p>
             ) : (
-              <RangeText
-                from={closedView.from}
-                to={closedView.to}
-                total={closed.length}
-                noun="encerrados"
-              />
+              <>
+                <ul className={b.closedList}>
+                  {closedView.items.map((c) => {
+                    const p = c.procurement;
+                    const problem = problems[c.id];
+                    return (
+                      <li key={c.id}>
+                        <span className={`rg-tag ${TAG_TONE[c.state] ?? ''}`}>
+                          {label(c.state)}
+                        </span>
+                        <div className={b.closedMain}>
+                          <Link href={`/editais/${p.id}`}>{readable(p.object)}</Link>
+                          <p className="wk-meta">
+                            {readableName(p.organ.name)}
+                            {p.organ.uf ? ` · ${p.organ.uf}` : ''}
+                          </p>
+                          {problem ? (
+                            <p className="wk-problem-inline" role="alert">
+                              <Icon name="alert" size={14} /> {problem.detail || problem.title}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span className={`wk-num ${b.closedValue}`}>
+                          {p.estimated_value != null ? fmtBRL(p.estimated_value) : <Dash />}
+                        </span>
+                        <select
+                          aria-label={`Reabrir ${p.numero_controle_pncp}`}
+                          value=""
+                          disabled={Boolean(pending[c.id])}
+                          onChange={(ev) => void move(c.id, ev.target.value as PipelineState)}
+                        >
+                          {options(c)}
+                        </select>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <Pagination
+                  id="encerrados"
+                  page={closedView.page}
+                  pages={closedView.pages}
+                  perPage={paging.perPage}
+                  onPage={paging.setPage}
+                  onPerPage={paging.setPerPage}
+                  label="Paginação dos encerrados"
+                />
+              </>
             )}
-          </span>
-        </div>
-        {closed.length === 0 ? (
-          <p className="wk-muted">
-            Desistências e descartados aparecem aqui. Arraste um card para cá para descartá-lo.
-          </p>
-        ) : (
-          <ul className={`${b.closedList}`}>
-            {closedView.items.map((c) => {
-              const p = c.procurement;
-              const problem = problems[c.id];
-              return (
-                <li key={c.id}>
-                  <span className={`rg-tag ${TAG_TONE[c.state] ?? ''}`}>{label(c.state)}</span>
-                  <div className={`${b.closedMain}`}>
-                    <Link href={`/editais/${p.id}`}>{p.object}</Link>
-                    <p className="wk-meta">
-                      {p.organ.name}
-                      {p.organ.uf ? ` · ${p.organ.uf}` : ''}
-                    </p>
-                    {problem ? (
-                      <p className="wk-problem-inline" role="alert">
-                        <Icon name="alert" size={14} /> {problem.detail || problem.title}
-                      </p>
-                    ) : null}
-                  </div>
-                  <span className={`wk-num ${b.closedValue}`}>
-                    {p.estimated_value != null ? fmtBRL(p.estimated_value) : <Dash />}
-                  </span>
-                  <select
-                    aria-label={`Reabrir ${p.numero_controle_pncp}`}
-                    value=""
-                    disabled={Boolean(pending[c.id])}
-                    onChange={(ev) => void move(c.id, ev.target.value as PipelineState)}
-                  >
-                    {options(c)}
-                  </select>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {closed.length > 0 ? (
-          <Pagination
-            id="encerrados"
-            page={closedView.page}
-            pages={closedView.pages}
-            perPage={paging.perPage}
-            onPage={paging.setPage}
-            onPerPage={paging.setPerPage}
-            label="Paginação dos encerrados"
-          />
+          </div>
         ) : null}
       </section>
     </>

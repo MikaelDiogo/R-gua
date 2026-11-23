@@ -4,7 +4,7 @@ import type { AlertItem, PipelineCard } from '@agora/contracts';
 import Link from 'next/link';
 import { useState } from 'react';
 import { api, newKey, problemText } from '@/lib/api';
-import { fmtBRL, readable } from '@/lib/format';
+import { fmtBRL, readable, readableName } from '@/lib/format';
 import { Icon } from '../Icon';
 import { relativeDay } from '../monitores/format';
 import { DeadlineRuler } from '../ui';
@@ -94,7 +94,7 @@ export function AlertCard({
           {readable(p.object)}
         </Link>
         <p className={s.sub}>
-          {p.organ.name}
+          {readableName(p.organ.name)}
           {p.organ.uf ? ` · ${p.organ.uf}` : ''} · {p.modality.name}
           {p.estimated_value != null ? ` · ${fmtBRL(p.estimated_value)}` : ''}
         </p>

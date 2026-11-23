@@ -8,7 +8,7 @@ import { Icon } from '@/components/Icon';
 import { QualityFlags } from '@/components/ResultCard';
 import { DeadlineRuler, PageHeader } from '@/components/ui';
 import { api, problemText } from '@/lib/api';
-import { fmtBRL, fmtDateTime, readable } from '@/lib/format';
+import { fmtBRL, fmtDateTime, readable, readableName } from '@/lib/format';
 import '@/styles/regua.css';
 
 type Props = { params: Promise<{ id: string }> };
@@ -107,7 +107,7 @@ export default async function EditalPage({ params }: Props) {
       <PageHeader
         title={title}
         crumb={<Back />}
-        lead={`${e.organ.name}${place ? ` · ${place}` : ''}`}
+        lead={`${readableName(e.organ.name)}${place ? ` · ${place}` : ''}`}
         actions={
           <EditalActions
             procurementId={e.id}
