@@ -62,5 +62,30 @@ export const SearchMeta = z.object({
   degraded: z.array(z.enum(['semantic', 'rerank', 'nl_understanding', 'lexical_bm25'])),
   index_freshness_at: z.string().datetime(),
   took_ms: z.number().nonnegative(),
+  /** O que o servidor entendeu do texto e aplicou como filtro (ex.: "Crateús" virou o município 2304103). */
+  applied: z
+    .object({
+      municipalities: z.array(
+        z.object({ name: z.string(), ibge: z.string(), uf: z.enum(['CE', 'PI']) }),
+      ),
+      /** Texto que continuou valendo na busca (vazio = só o lugar foi pedido). */
+      text: z.string().nullable(),
+    })
+    .optional(),
 });
 export type SearchMeta = z.infer<typeof SearchMeta>;
+
+/** Autocomplete de município (CE e PI): GET /v1/municipalities?q=&limit= */
+export const MunicipalitiesQuery = z
+  .object({
+    q: z.string().max(80).optional(),
+    limit: z.coerce.number().int().min(1).max(50).default(10),
+  })
+  .strict();
+export type MunicipalitiesQuery = z.infer<typeof MunicipalitiesQuery>;
+
+export const MunicipalitiesResponse = z.object({
+  items: z.array(z.object({ name: z.string(), ibge: z.string(), uf: z.enum(['CE', 'PI']) })),
+  server_now: z.string().datetime(),
+});
+export type MunicipalitiesResponse = z.infer<typeof MunicipalitiesResponse>;

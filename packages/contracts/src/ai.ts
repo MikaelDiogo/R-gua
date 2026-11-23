@@ -46,11 +46,27 @@ export type AiRanked = z.infer<typeof AiRanked>;
 
 /** Resultado da busca em si, antes de ser ligado a uma conversa. */
 export const AiSearchResult = z.object({
+  /** 'help' = o chat respondeu uma dúvida sobre o sistema (sem buscar editais); 'search' = busca de editais. */
+  kind: z.enum(['search', 'help']).default('search'),
+  /** Resposta de ajuda (só quando kind = 'help'): texto curto em português e perguntas de continuação. */
+  help: z
+    .object({ answer: z.string(), suggestions: z.array(z.string()).max(5) })
+    .nullable()
+    .default(null),
   understood: z.object({
     /** Como a IA entendeu o pedido, em uma frase. */
     summary: z.string(),
     keywords: z.array(z.string()),
     filters: z.array(z.string()),
+    /** Municípios que o servidor identificou no pedido (sem IA): o resultado só vem deles. */
+    municipality: z
+      .array(z.object({ name: z.string(), ibge: z.string(), uf: z.string() }))
+      .default([]),
+    /** Consulta ao PNCP na hora, para o município pedido (null = não foi preciso ou não está ligada). */
+    live_refresh: z
+      .object({ fetched: z.number().int(), upserted: z.number().int(), complete: z.boolean() })
+      .nullable()
+      .default(null),
   }),
   results: z.array(AiRanked),
   /** Oportunidades achadas na web (Tavily) fora da nossa base: links de portais de compras, não verificados. */
@@ -60,13 +76,36 @@ export const AiSearchResult = z.object({
       url: z.string(),
       host: z.string(),
       snippet: z.string(),
-      /** Avaliação só pelo título e trecho achados: o que não aparece no trecho fica "unknown". Sempre não verificado. */
+      /** Nota calculada no servidor. Com `extracted` = true vem do conteúdo da página; senão só do título e trecho. */
       score: z.number().int().min(0).max(100),
       verdict: AiVerdict,
-      criteria: z.array(z.object({ name: z.string(), status: CriterionStatus })),
+      criteria: z.array(
+        z.object({
+          name: z.string(),
+          status: CriterionStatus,
+          /** Trecho do conteúdo da página que sustenta o critério, conferido pelo servidor; null sem prova. */
+          quote: z.string().nullable().default(null),
+        }),
+      ),
       reasons: z.array(z.string()),
       concerns: z.array(z.string()),
-      verified: z.literal(false),
+      /** true só quando o servidor conferiu pelo menos uma citação literal no conteúdo da página. */
+      verified: z.boolean(),
+      /** A página é mesmo um edital ou aviso de contratação? null = não deu para ler o conteúdo. */
+      is_edital: z.boolean().nullable().default(null),
+      /** O conteúdo da página foi lido (extraído) para a análise? Senão a avaliação usou só título e trecho. */
+      extracted: z.boolean().default(false),
+      /** O que a página diz do próprio edital (objeto, órgão, local, valor, prazo), quando foi possível ler. */
+      details: z
+        .object({
+          object: z.string().nullable(),
+          organ: z.string().nullable(),
+          place: z.string().nullable(),
+          value: z.string().nullable(),
+          deadline: z.string().nullable(),
+        })
+        .nullable()
+        .default(null),
     }),
   ),
   /** Vigilâncias fixas (ex.: assessoria jurídica em LGPD): aparecem sempre que há editais abertos, mesmo fora do pedido. */
