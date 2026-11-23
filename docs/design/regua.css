@@ -1,0 +1,1119 @@
+/* Régua — estilos de componentes (prefixo rg-). Todo valor vem de tokens.css.
+   Fonte: regua-design-system.html. Idêntico em docs/design/regua.css e apps/web/src/styles/regua.css.
+   As fontes (Newsreader e Instrument Sans) são carregadas pelo next/font no layout, não por @import. */
+/* Régua — component styles. Every value comes from tokens.css (tokens.json). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--canvas);
+  color: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+.rg-stage {
+  padding: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.rg-stage-col {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.rg-num {
+  font-variant-numeric: tabular-nums;
+}
+.rg-muted {
+  color: var(--muted);
+}
+.rg-absent {
+  color: var(--muted);
+}
+:where(.rg-btn, .rg-chip, .rg-field, .rg-nav-item, .rg-suggest, .rg-link):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Button */
+.rg-btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rg-btn:hover {
+  background: var(--surface);
+}
+.rg-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.rg-btn-primary:hover {
+  background: var(--accent-active);
+  border-color: var(--accent-active);
+}
+.rg-btn-primary:active {
+  background: var(--accent-active);
+}
+.rg-btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--body);
+}
+.rg-btn-quiet:hover {
+  background: var(--surface);
+}
+.rg-btn[disabled],
+.rg-btn[aria-disabled="true"] {
+  background: var(--surface);
+  border-color: var(--hairline);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.rg-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Mode chip (Web / PNCP) */
+.rg-chip {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--body);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.rg-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+}
+.rg-chip[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rg-chip[aria-pressed="true"]::before {
+  background: currentColor;
+}
+.rg-chip[disabled] {
+  color: var(--muted);
+  border-color: var(--hairline);
+  cursor: not-allowed;
+}
+
+/* Composer */
+.rg-composer {
+  width: 100%;
+  max-width: var(--chat-column);
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-composer);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+}
+.rg-composer-input {
+  display: block;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  resize: none;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: transparent;
+  min-height: 48px;
+  padding: var(--space-1) 0;
+}
+.rg-composer-input::placeholder {
+  color: var(--muted);
+}
+.rg-composer-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.rg-composer-bar .rg-spacer {
+  flex: 1;
+}
+.rg-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.rg-icon-btn:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+.rg-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.rg-send {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: var(--accent);
+  color: var(--on-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.rg-send[disabled] {
+  background: var(--surface);
+  color: var(--muted);
+}
+.rg-send svg {
+  width: 16px;
+  height: 16px;
+}
+.rg-greeting {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin: 0 0 var(--space-6);
+}
+.rg-suggests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.rg-suggest {
+  font: inherit;
+  font-size: 13px;
+  color: var(--body);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-pill);
+  padding: 6px var(--space-3);
+  cursor: pointer;
+}
+.rg-suggest:hover {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+
+/* Chat messages */
+.rg-msg-user {
+  align-self: flex-end;
+  max-width: 80%;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+.rg-msg-ai {
+  color: var(--body);
+  max-width: var(--chat-column);
+}
+.rg-msg-ai p {
+  margin: 0 0 var(--space-3);
+}
+.rg-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+.rg-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-xs);
+  padding: 1px var(--space-2);
+  color: var(--ink);
+  background: var(--card);
+  font-size: 12px;
+  font-weight: 500;
+}
+.rg-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.rg-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.rg-steps li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-strong);
+}
+.rg-steps li[data-done]::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.rg-steps li[data-now] {
+  color: var(--ink);
+}
+.rg-steps li[data-now]::before {
+  border-color: var(--accent);
+}
+.rg-cite {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--info);
+  vertical-align: super;
+  margin-left: 1px;
+}
+.rg-sources {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.rg-sources li {
+  display: flex;
+  gap: var(--space-2);
+}
+.rg-sources .rg-n {
+  color: var(--info);
+  font-weight: 600;
+  min-width: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.rg-sources .rg-dom {
+  color: var(--muted);
+}
+
+/* Source badge */
+.rg-src {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.rg-src-pncp {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.rg-src-web {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.rg-src-model {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+/* Stage tag (etapa do funil) and status */
+.rg-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--body);
+  white-space: nowrap;
+}
+.rg-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+}
+.rg-tag-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.rg-tag-accent::before {
+  background: var(--accent);
+}
+.rg-tag-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.rg-tag-success::before {
+  background: var(--success);
+}
+.rg-tag-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.rg-tag-warning::before {
+  background: var(--warning);
+}
+.rg-tag-error {
+  background: var(--error-soft);
+  color: var(--error);
+}
+.rg-tag-error::before {
+  background: var(--error);
+}
+
+/* Avatar */
+.rg-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--tone-slate);
+  flex: none;
+}
+.rg-avatar-lg {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+.rg-avatar[data-tone="clay"] {
+  background: var(--tone-clay);
+}
+.rg-avatar[data-tone="sky"] {
+  background: var(--tone-sky);
+}
+.rg-avatar[data-tone="rose"] {
+  background: var(--tone-rose);
+}
+.rg-avatar[data-tone="moss"] {
+  background: var(--tone-moss);
+}
+.rg-avatar[data-tone="sand"] {
+  background: var(--tone-sand);
+}
+
+/* Card */
+.rg-card {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+
+/* Edital card (chat) */
+.rg-edital {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--chat-column);
+}
+.rg-edital-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.rg-edital-obj {
+  color: var(--ink);
+  font-weight: 500;
+  margin: 0;
+}
+.rg-edital-meta {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+.rg-edital-meta span + span::before {
+  content: "·";
+  margin-right: var(--space-2);
+}
+.rg-edital-figs {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-end;
+}
+.rg-fig-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.rg-fig {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.rg-match {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.rg-edital-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+  margin-top: var(--space-1);
+}
+.rg-edital-actions .rg-btn {
+  height: 30px;
+  font-size: 13px;
+  padding: 0 var(--space-3);
+}
+
+/* Régua de prazos */
+.rg-ruler {
+  --day: calc(100% / 14);
+  position: relative;
+}
+.rg-ruler-days {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+.rg-ruler-days span {
+  padding-left: 2px;
+  border-left: 1px solid var(--hairline);
+}
+.rg-ruler-days span[data-weekend] {
+  color: var(--muted);
+  opacity: 0.75;
+}
+.rg-ruler-row {
+  position: relative;
+  height: var(--ruler-bar);
+  margin-bottom: var(--space-2);
+  background-image: linear-gradient(to right, var(--hairline) 1px, transparent 1px);
+  background-size: var(--day) 100%;
+}
+.rg-ruler-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: var(--radius-xs);
+  background: var(--accent);
+}
+.rg-ruler-bar[data-tone="warning"] {
+  background: var(--warning);
+}
+.rg-ruler-bar[data-tone="error"] {
+  background: var(--error);
+}
+.rg-ruler-bar[data-tone="muted"] {
+  background: var(--line-strong);
+}
+.rg-ruler-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+.rg-ruler-mini .rg-ruler-row {
+  height: 10px;
+  margin: 0;
+}
+.rg-ruler-cap {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* KPI */
+.rg-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+.rg-kpi {
+  padding: var(--space-4) var(--space-6);
+}
+.rg-kpi + .rg-kpi {
+  border-left: 1px solid var(--hairline);
+}
+.rg-kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 0 0 var(--space-1);
+}
+.rg-kpi-value {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.rg-kpi-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: var(--space-1) 0 0;
+}
+.rg-kpi-note .rg-good {
+  color: var(--success);
+}
+.rg-kpi-note .rg-bad {
+  color: var(--error);
+}
+
+/* Table */
+.rg-table-wrap {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+}
+.rg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rg-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  white-space: nowrap;
+}
+.rg-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  color: var(--body);
+  vertical-align: middle;
+}
+.rg-table tr:last-child td {
+  border-bottom: 0;
+}
+.rg-table tbody tr:hover td {
+  background: var(--canvas);
+}
+.rg-table tr[aria-selected="true"] td {
+  background: var(--accent-soft);
+}
+.rg-table .rg-r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rg-table .rg-strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+.rg-table .rg-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Kanban card */
+.rg-kcol {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.rg-kcol-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 0 var(--space-1) var(--space-1);
+}
+.rg-kcol-head .rg-count {
+  color: var(--muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.rg-kcard {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  cursor: grab;
+}
+.rg-kcard[data-dragging] {
+  box-shadow: var(--shadow-menu);
+  transform: rotate(-1deg);
+}
+.rg-kcard[data-overdue] {
+  border-color: var(--error);
+}
+.rg-kcard-obj {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.rg-kcard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rg-kcol-empty {
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Banner (API fora do ar, edital alterado, limite do plano) */
+.rg-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  font-size: 13px;
+  color: var(--body);
+  max-width: var(--chat-column);
+}
+.rg-banner-title {
+  color: var(--ink);
+  font-weight: 500;
+  margin: 0;
+}
+.rg-banner p {
+  margin: 0;
+}
+.rg-banner .rg-banner-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rg-banner-error {
+  background: var(--error-soft);
+  border-color: transparent;
+}
+.rg-banner-error .rg-banner-title {
+  color: var(--error);
+}
+.rg-banner-warning {
+  background: var(--warning-soft);
+  border-color: transparent;
+}
+.rg-banner-warning .rg-banner-title {
+  color: var(--warning);
+}
+.rg-banner .rg-btn {
+  height: 30px;
+  font-size: 13px;
+  padding: 0 var(--space-3);
+}
+
+/* Empty state */
+.rg-empty {
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+.rg-empty-head {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  display: flex;
+  justify-content: space-between;
+}
+.rg-empty-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.rg-empty-title {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 500;
+}
+.rg-empty-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 52ch;
+}
+
+/* Plan lock */
+.rg-lock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  font-size: 13px;
+  color: var(--body);
+}
+.rg-lock svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex: none;
+}
+.rg-lock .rg-plan {
+  color: var(--ink);
+  font-weight: 500;
+}
+.rg-lock .rg-spacer {
+  flex: 1;
+}
+.rg-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--line-strong);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Sidebar */
+.rg-side {
+  width: var(--sidebar-width);
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 13px;
+}
+.rg-side > * {
+  flex-shrink: 0;
+}
+.rg-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+.rg-brand-name {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.rg-company {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.rg-nav-group {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: var(--space-3) var(--space-2) var(--space-1);
+}
+.rg-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--body);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.rg-nav-item:hover {
+  background: var(--hairline);
+}
+.rg-nav-item[aria-current="page"] {
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.rg-nav-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex: none;
+}
+.rg-nav-item .rg-plan-badge,
+.rg-nav-item .rg-soon {
+  margin-left: auto;
+}
+.rg-soon {
+  font-size: 11px;
+  color: var(--muted);
+}
+.rg-nav-item[aria-disabled="true"] {
+  color: var(--muted);
+}
+.rg-newchat {
+  justify-content: flex-start;
+  width: 100%;
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ── Vidro translúcido (campos, popovers, barras flutuantes) ─────────────────── */
+.rg-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 var(--glass-border);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rg-glass {
+    background: var(--card);
+  }
+}
+@media (prefers-contrast: more) {
+  .rg-glass {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Foco: anel arredondado no CONTÊINER (nunca um retângulo no input interno). */
+.rg-field-shell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-2) 0 var(--space-4);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+  transition:
+    box-shadow var(--dur-fast, 120ms) ease,
+    border-color var(--dur-fast, 120ms) ease;
+}
+.rg-field-shell:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--ring), var(--glass-shadow);
+}
+.rg-field-shell input,
+.rg-field-shell textarea {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+}
+.rg-field-shell input::placeholder,
+.rg-field-shell textarea::placeholder {
+  color: var(--muted);
+}
+
+/* Compositor do chat em vidro, com o mesmo anel suave. */
+.rg-composer {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border-color: var(--glass-edge);
+  transition:
+    box-shadow var(--dur-fast, 120ms) ease,
+    border-color var(--dur-fast, 120ms) ease;
+}
+.rg-composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--ring), var(--shadow-composer);
+}
+.rg-composer-input:focus,
+.rg-composer-input:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+@media (prefers-contrast: more) {
+  .rg-composer {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Aura: cor suave atrás do vidro, em TODAS as telas. Fica parada ao rolar (fixed), então a barra lateral e os
+   campos sempre têm o que desfocar. Cartões, tabelas e listas continuam sólidos por cima. */
+body {
+  background-color: var(--canvas);
+  background-image:
+    radial-gradient(60% 50% at 8% 0%, var(--accent-soft) 0%, transparent 70%),
+    radial-gradient(50% 45% at 100% 8%, var(--tone-sky) 0%, transparent 72%),
+    radial-gradient(45% 40% at 92% 100%, var(--tone-sand) 0%, transparent 75%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Barra lateral em vidro: o menu fica sobre a aura, com borda de 1px (texto continua ink/body sobre tom claro). */
+.rg-side {
+  background: var(--glass-side);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  border-right: 1px solid var(--glass-edge);
+}
+.rg-nav-item:hover {
+  background: rgba(231, 226, 214, 0.6);
+}
+@media (max-width: 1023px) {
+  /* Gaveta no celular: mais opaca (sobrepõe conteúdo de verdade). */
+  .rg-side {
+    background: rgba(244, 240, 231, 0.92);
+  }
+}
+
+/* Botões secundários, chips e sugestões: translúcidos, sem blur (são muitos e pequenos). */
+.rg-btn:not(.rg-btn-primary, .rg-btn-quiet, [disabled], [aria-disabled="true"]) {
+  background: var(--glass-bg-strong);
+  border-color: var(--glass-edge);
+}
+.rg-btn:not(.rg-btn-primary, .rg-btn-quiet, [disabled], [aria-disabled="true"]):hover {
+  background: var(--card);
+}
+.rg-suggest,
+.rg-filter {
+  background: var(--glass-bg);
+}
+.rg-chip:not([aria-pressed="true"], [disabled]) {
+  background: var(--glass-bg);
+}
+
+/* Campo de formulário em vidro, para telas que não usam .wk-field. */
+.rg-glass-field {
+  background: var(--glass-bg-field);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(1.3);
+  border-color: var(--glass-edge);
+}
+
+/* Fallbacks: sem suporte a blur, alto contraste ou transparência reduzida => sólido, sem perder nada. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rg-side {
+    background: var(--surface);
+  }
+  .rg-glass-field {
+    background: var(--card);
+  }
+}
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  body {
+    background-image: none;
+  }
+  .rg-side {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .rg-glass,
+  .rg-glass-field,
+  .rg-composer {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
