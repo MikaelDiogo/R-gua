@@ -1,0 +1,24 @@
+{
+  "name": "agora",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Ágora — gestão de licitações com IA",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "ml:up": "docker compose --profile ml up -d"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "typescript": "~5.9.3"
+  }
+}

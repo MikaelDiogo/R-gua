@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+!.env.production.example
+.taste-skill/
+.DS_Store
+__pycache__/
+.venv/
+infra/docker/data/
+.scratch/
