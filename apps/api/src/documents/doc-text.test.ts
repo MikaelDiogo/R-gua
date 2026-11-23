@@ -2,8 +2,23 @@ import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { verifyCitation } from '../ai/analysis.service';
 import { extractPages, LIMITS } from './doc-text';
+import { pdfWithText } from './pdf-fixture';
 
 describe('extractPages', () => {
+  it('lê o texto de um PDF de verdade, e duas leituras ao mesmo tempo não se atropelam', async () => {
+    const frase =
+      'Pregao eletronico numero 045 de 2026 para aquisicao de notebooks da rede municipal';
+    const [a, b] = await Promise.all([
+      extractPages(pdfWithText(frase), 'edital.pdf'),
+      extractPages(pdfWithText(frase), 'edital2.pdf'),
+    ]);
+    for (const r of [a, b]) {
+      expect(r.status).toBe('ok');
+      expect(r.pages).toHaveLength(1);
+      expect(r.pages[0]?.text).toContain('notebooks');
+    }
+  });
+
   it('formato desconhecido é "unsupported" (o tipo vem do conteúdo, não da extensão)', async () => {
     expect((await extractPages(strToU8('texto puro'), 'x.pdf')).status).toBe('unsupported');
   });

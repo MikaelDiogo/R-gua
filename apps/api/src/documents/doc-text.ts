@@ -48,7 +48,11 @@ async function pdfPagesNow(bytes: Uint8Array, label: string): Promise<Extraction
     // unpdf é só ESM: carregado sob demanda (e só quando há PDF para ler).
     const { extractText, getDocumentProxy } = await import('unpdf');
     const pdf = await getDocumentProxy(bytes);
-    destroy = () => pdf.destroy();
+    // O pdf.js liga destroy/cleanup conforme a versão: usa o que existir (nunca deixa isso derrubar a leitura).
+    const p = pdf as { destroy?: () => Promise<void>; cleanup?: () => Promise<void> };
+    destroy = async () => {
+      await (p.destroy ?? p.cleanup)?.call(p);
+    };
     if (pdf.numPages > LIMITS.maxPdfPages) return { status: 'too_large', pages: [] };
     const { text } = await extractText(pdf, { mergePages: false });
     const pages = (text as string[]).map((t, i) => ({
@@ -67,7 +71,11 @@ async function pdfPagesNow(bytes: Uint8Array, label: string): Promise<Extraction
   } catch {
     return { status: 'failed', pages: [] };
   } finally {
-    await destroy?.().catch(() => undefined); // devolve a memória do PDF assim que acaba
+    try {
+      await destroy?.(); // devolve a memória do PDF assim que acaba
+    } catch {
+      // falha ao liberar memória não pode virar erro de leitura
+    }
   }
 }
 

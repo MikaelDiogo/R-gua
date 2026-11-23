@@ -2,7 +2,7 @@
 declare module 'unpdf' {
   export function getDocumentProxy(
     data: Uint8Array,
-  ): Promise<{ numPages: number; destroy(): Promise<void> }>;
+  ): Promise<{ numPages: number; destroy?: () => Promise<void>; cleanup?: () => Promise<void> }>;
   export function extractText(
     pdf: unknown,
     options: { mergePages: false },
